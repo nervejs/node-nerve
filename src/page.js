@@ -18,6 +18,10 @@ Page = NerveObject.extend({
     template: '',
     templateFooter: '',
 
+    defaultOptions: {
+        isNeedActiveUser: true
+    },
+
     init: function (app, options) {
         this.app = app;
         this.options = _.assign({}, this.defaultOptions, options);
@@ -140,9 +144,15 @@ Page = NerveObject.extend({
     },
 
     getResponsePromises: function () {
+        var activeUserPromise;
+
+        if (this.options.isNeedActiveUser) {
+            activeUserPromise = this.activeUser.request();
+        }
+
         return [
-            this.getResponse(),
-            this.activeUser.request()
+            this.getResponse(activeUserPromise),
+            activeUserPromise
         ];
     },
 
