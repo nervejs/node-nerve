@@ -9,6 +9,7 @@ var _ = require('lodash'),
     Page = require('./page'),
     ActiveUser = require('./active-user'),
     HandlebarsHelpers = require('./lib/handlebars-helpers/main'),
+    debug = require('./lib/debug'),
     Handlebars = require('handlebars'),
     NerveApp;
 
@@ -30,9 +31,12 @@ NerveApp = NerveObject.extend({
 
         this.router = new Router(this);
         this.routes = {};
-        this.environment = 'dev';
 
-        this.readCfg();
+        this.environment = process.env.NODE_NERVE_ENV || 'dev';
+
+        this.readCfg().then(function () {
+            debug.setLevel(this.getCfg('logLevel'));
+        }.bind(this));
     },
 
     listen: function (port, callback) {
@@ -52,16 +56,21 @@ NerveApp = NerveObject.extend({
     },
 
     readCfg: function () {
-        fs.readFile('./nerve.json', function (err, content) {
-            var config;
+        return new Promise(function (resolve, reject) {
+            fs.readFile('./nerve.json', function (err, content) {
+                var config;
 
-            if (err) {
-                throw err;
-            }
+                if (err) {
+                    reject(err);
+                    throw err;
+                }
 
-            config = JSON.parse(content.toString());
-            this.config = config[this.environment];
-        }.bind(this));
+                config = JSON.parse(content.toString());
+                this.config = config[this.environment];
+
+                resolve(this.config);
+            }.bind(this));
+        });
     },
 
     getCfg: function (key) {
@@ -77,5 +86,6 @@ module.exports = {
     Page: Page,
     ActiveUser: ActiveUser,
     HandlebarsHelpers: HandlebarsHelpers,
-    Handlebars: Handlebars
+    Handlebars: Handlebars,
+    debug: debug
 };

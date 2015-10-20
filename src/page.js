@@ -7,6 +7,7 @@ var _ = require('lodash'),
     ActiveUser = require('./active-user'),
     url = require('url'),
     locales = require('./lib/locales'),
+    debug = require('./lib/debug'),
     Page;
 
 Page = NerveObject.extend({
@@ -23,6 +24,8 @@ Page = NerveObject.extend({
     },
 
     init: function (app, options) {
+        debug.time('FULL PAGE TIME');
+
         this.app = app;
         this.options = _.assign({}, this.defaultOptions, options);
 
@@ -46,20 +49,25 @@ Page = NerveObject.extend({
 
         this.initActiveUser();
 
+        debug.time('GET API RESPONSE');
+
         Promise.all(this.getResponsePromises()).then(function (responses) {
-            var vars,
-                html;
+            var vars;
 
-            try {
-                vars = _.assign({}, responses[0], this.getTemplateVars(), {
-                    activeUser: this.activeUser.toJSON()
-                });
-                html = this.getHtml(vars);
-            } catch (err) {
-                console.log(err.stack);
-            }
+            debug.timeEnd('GET API RESPONSE');
+            debug.time('PAGE PROCESSING');
 
-            this.send(html);
+            debug.time('TEMPLATE VARS');
+            vars = this.getTemplateVars();
+            debug.timeEnd('TEMPLATE VARS');
+
+            vars = _.assign({}, responses[0], vars, {
+                activeUser: this.activeUser.toJSON()
+            });
+
+            this.getHtml(vars).then(function (html) {
+                this.send(html);
+            }.bind(this));
         }.bind(this));
     },
 
@@ -79,15 +87,15 @@ Page = NerveObject.extend({
     },
 
     getStaticHost: function () {
-        return this.app.getCfg('staticHost');
+        return '//' + this.app.getCfg('staticHost');
     },
 
     getJsHost: function () {
-        return this.app.getCfg('jsHost');
+        return '//' + this.app.getCfg('jsHost');
     },
 
     getCssHost: function () {
-        return this.app.getCfg('cssHost');
+        return '//' + this.app.getCfg('cssHost');
     },
 
     getCssVersion: function (cssName) {
@@ -157,8 +165,21 @@ Page = NerveObject.extend({
     },
 
     getTemplateVars: function () {
+        var locales,
+            localesJson;
+
+        debug.time('GET LOCALES');
+        locales = this.constructor.locales || this.getLocales();
+        this.constructor.locales = locales;
+
+        localesJson = this.constructor.localesJson || JSON.stringify(locales);
+        this.constructor.localesJson = localesJson;
+        debug.timeEnd('GET LOCALES');
+
         return {
-            css: this.getCss()
+            css: this.getCss(),
+            locales: locales,
+            localesJson: localesJson
         };
     },
 
@@ -177,11 +198,37 @@ Page = NerveObject.extend({
     },
 
     getHtml: function (vars) {
-        var head = this.tmplHead ? this.tmplHead(vars) : '',
-            content = this.tmpl(vars),
-            footer = this.tmplFooter ? this.tmplFooter(vars) : '';
+        var head,
+            content,
+            footer;
 
-        return head + content + footer;
+        debug.time('RENDER');
+
+        return new Promise(function (resolve) {
+            Promise.all([
+                new Promise(function (resolve) {
+                    debug.time('RENDER HEAD');
+                    head = this.tmplHead ? this.tmplHead(vars) : '';
+                    debug.timeEnd('RENDER HEAD');
+                    resolve(head);
+                }.bind(this)),
+                new Promise(function (resolve) {
+                    debug.time('RENDER CONTENT');
+                    content = this.tmpl(vars);
+                    debug.timeEnd('RENDER CONTENT');
+                    resolve(content);
+                }.bind(this)),
+                new Promise(function (resolve) {
+                    debug.time('RENDER FOOTER');
+                    footer = this.tmplFooter ? this.tmplFooter(vars) : '';
+                    debug.timeEnd('RENDER FOOTER');
+                    resolve(footer);
+                }.bind(this))
+            ]).then(function () {
+                debug.timeEnd('RENDER');
+                resolve(head + content + footer);
+            });
+        }.bind(this));
     },
 
     send: function (html) {
@@ -190,6 +237,8 @@ Page = NerveObject.extend({
             'Content-type': 'text/html; charset=utf-8'
         });
 
+        debug.timeEnd('PAGE PROCESSING');
+        debug.timeEnd('FULL PAGE TIME');
         this.options.response.send(html);
     }
 
