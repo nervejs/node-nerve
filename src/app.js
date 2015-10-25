@@ -7,8 +7,9 @@ var _ = require('lodash'),
     express = require('express'),
     Router = require('./router'),
     Page = require('./page'),
+    Api = require('./api'),
     ActiveUser = require('./active-user'),
-    HandlebarsHelpers = require('./lib/handlebars-helpers/main'),
+    handlebarsHelpers = require('./lib/handlebars-helpers/main'),
     debug = require('./lib/debug'),
     Handlebars = require('handlebars'),
     NerveApp;
@@ -79,13 +80,14 @@ NerveApp = NerveObject.extend({
 
 });
 
-HandlebarsHelpers(Handlebars);
+handlebarsHelpers(Handlebars);
 
 module.exports = {
     App: NerveApp,
     Page: Page,
+    Api: Api,
     ActiveUser: ActiveUser,
-    HandlebarsHelpers: HandlebarsHelpers,
+    HandlebarsHelpers: handlebarsHelpers,
     Handlebars: Handlebars,
     debug: debug
 };

@@ -9,7 +9,7 @@ var path = require('path'),
 exports.init = function (app) {
     fs.readdir(app.getCfg('localesDir'), function (err, files) {
         files.forEach(function (locale) {
-            var filePath = path.resolve(localesDir, locale, app.getCfg('localesFileName'));
+            var filePath = path.resolve(app.getCfg('localesDir'), locale, app.getCfg('localesFileName'));
 
             fs.readFile(filePath, function (err, content) {
                 locales[locale] = gettextParser.po.parse(content.toString()).translations;

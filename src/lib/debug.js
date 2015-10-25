@@ -16,6 +16,16 @@ module.exports = {
         }
     },
 
+    error: function (message) {
+        var args = arguments;
+
+        if (this.level > 0) {
+            setTimeout(function () {
+                console.log.apply(this, args);
+            });
+        }
+    },
+
     debug: function (message) {
         var args = arguments;
 

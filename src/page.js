@@ -3,6 +3,7 @@
 var _ = require('lodash'),
     NerveObject = require('./object'),
     path = require('path'),
+    fs = require('fs'),
     request = require('request'),
     ActiveUser = require('./active-user'),
     url = require('url'),
@@ -33,15 +34,24 @@ Page = NerveObject.extend({
 
         if (this.templateHead) {
             this.templateHeadPath = path.resolve(this.frontEndDir, this.baseTmplPath, this.templateHead);
+            if (this.app.getCfg('isClearTemplateCache')) {
+                delete require.cache[require.resolve(this.templateHeadPath)];
+            }
             this.tmplHead = require(this.templateHeadPath);
         }
 
         if (this.templateFooter) {
             this.templateFooterPath = path.resolve(this.frontEndDir, this.baseTmplPath, this.templateFooter);
+            if (this.app.getCfg('isClearTemplateCache')) {
+                delete require.cache[require.resolve(this.templateFooterPath)];
+            }
             this.tmplFooter = require(this.templateFooterPath);
         }
 
         this.templatePath = path.resolve(this.frontEndDir, this.pagesTmplPath, this.template);
+        if (this.app.getCfg('isClearTemplateCache')) {
+            delete require.cache[require.resolve(this.templatePath)];
+        }
         this.tmpl = require(this.templatePath);
 
         //this.isUseMin = false;
@@ -51,22 +61,35 @@ Page = NerveObject.extend({
 
         debug.time('GET API RESPONSE');
 
+        if (this.Api) {
+            this.api = new this.Api(this, {
+                request: this.options.request,
+                response: this.options.response
+            });
+        } else {
+            debug.log('API IS EMPTY');
+        }
+
         Promise.all(this.getResponsePromises()).then(function (responses) {
             var vars;
 
             debug.timeEnd('GET API RESPONSE');
             debug.time('PAGE PROCESSING');
 
-            debug.time('TEMPLATE VARS');
-            vars = this.getTemplateVars();
-            debug.timeEnd('TEMPLATE VARS');
+            this.getLocalesVars().then(function (localesVars) {
+                debug.time('TEMPLATE VARS');
+                vars = _.merge({}, responses[1], localesVars, this.getTemplateVars(), {
+                    activeUser: this.activeUser.toJSON()
+                });
+                debug.timeEnd('TEMPLATE VARS');
 
-            vars = _.assign({}, responses[0], vars, {
-                activeUser: this.activeUser.toJSON()
-            });
-
-            this.getHtml(vars).then(function (html) {
-                this.send(html);
+                if (this.options.request.headers.accept.indexOf('application/json') !== -1) {
+                    this.send(JSON.stringify(vars));
+                } else {
+                    this.getHtml(vars).then(function (html) {
+                        this.send(html);
+                    }.bind(this));
+                }
             }.bind(this));
         }.bind(this));
     },
@@ -127,7 +150,41 @@ Page = NerveObject.extend({
     },
 
     getLocales: function () {
-        return {};
+        return null;
+    },
+
+    readLocales: function (pathToFile) {
+        var locales;
+
+        return new Promise(function (resolve, reject) {
+            fs.readFile(pathToFile, function (err, content) {
+                if (err) {
+                    debug.error(err);
+                    reject(err);
+                } else {
+                    locales = JSON.parse(content.toString());
+                    resolve(this.walkLocales(locales));
+                }
+            }.bind(this));
+        }.bind(this));
+    },
+
+    walkLocales: function (locales) {
+        var result = {};
+
+        Object.keys(locales).forEach(function (key) {
+            var item = locales[key];
+
+            if (_.isString(item)) {
+                result[key] = this.getText(item);
+            } else if (_.isObject(item) && item.text && (item.vars || item.ctx)) {
+                result[key] = this.getText(item.text, item.ctx, item.vars);
+            } else if (_.isObject(item)) {
+                result[key] = this.walkLocales(item);
+            }
+        }.bind(this));
+
+        return result;
     },
 
     getText: function (message, ctx, params) {
@@ -152,48 +209,72 @@ Page = NerveObject.extend({
     },
 
     getResponsePromises: function () {
-        var activeUserPromise;
+        var promises = [];
 
         if (this.options.isNeedActiveUser) {
-            activeUserPromise = this.activeUser.request();
+            promises.push(this.activeUser.request());
         }
 
-        return [
-            this.getResponse(activeUserPromise),
-            activeUserPromise
-        ];
+        if (this.api) {
+            promises.push(this.api.fetch());
+        }
+
+        return promises;
     },
 
     getTemplateVars: function () {
-        var locales,
-            localesJson;
-
-        debug.time('GET LOCALES');
-        locales = this.constructor.locales || this.getLocales();
-        this.constructor.locales = locales;
-
-        localesJson = this.constructor.localesJson || JSON.stringify(locales);
-        this.constructor.localesJson = localesJson;
-        debug.timeEnd('GET LOCALES');
-
         return {
-            css: this.getCss(),
-            locales: locales,
-            localesJson: localesJson
+            css: this.getCss()
         };
     },
 
-    adapter: function (response) {
-        return response;
-    },
+    getLocalesVars: function () {
+        var currentLocale = this.activeUser.get('locale'),
+            localesPromise,
+            localesObject = {};
 
-    getResponse: function () {
+        debug.time('GET LOCALES');
+
+        if (!this.constructor.locales) {
+            this.constructor.locales = {};
+            this.constructor.localesJson = {};
+        }
+
         return new Promise(function (resolve) {
-            request({
-                url: url.resolve(this.app.getCfg('apiHost'), this.url)
-            }, function (error, response, body) {
-                 resolve(JSON.parse(body));
-            });
+            if (this.constructor.locales[currentLocale] && this.constructor.localesJson[currentLocale]) {
+                resolve({
+                    locales: this.constructor.locales[currentLocale],
+                    localesJson: this.constructor.localesJson[currentLocale]
+                });
+
+                debug.timeEnd('GET LOCALES');
+            } else {
+                localesPromise = this.getLocales();
+
+                if (localesPromise) {
+                    localesPromise.then(function (locales) {
+                        if (Array.isArray(locales)) {
+                            locales.forEach(function (localesItem) {
+                                localesObject = _.merge(localesObject, localesItem);
+                            });
+                        } else {
+                            localesObject = locales;
+                        }
+
+                        this.constructor.locales[currentLocale] = localesObject;
+                        this.constructor.localesJson[currentLocale] = JSON.stringify(localesObject);
+
+                        resolve({
+                            locales: this.constructor.locales[currentLocale],
+                            localesJson: this.constructor.localesJson[currentLocale]
+                        });
+
+                        debug.timeEnd('GET LOCALES');
+                    }.bind(this));
+                } else {
+                    resolve({});
+                }
+            }
         }.bind(this));
     },
 

@@ -10,8 +10,9 @@ module.exports = function (grunt) {
                     'src/**/*.js'
                 ],
                 directives: {
-                    unparam: true,
+                    node: true,
                     nomen: true,
+                    unparam: true,
                     plusplus: true
                 }
             }
