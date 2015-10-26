@@ -18,6 +18,7 @@ NerveObject.extend = function (proto) {
 
     Child = function () {
         Parent.apply(this, arguments);
+        this.constructor = Child;
     };
 
     Child.prototype = _.merge({}, Parent.prototype, proto);

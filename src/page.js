@@ -1,17 +1,16 @@
 'use strict';
 
 var _ = require('lodash'),
-    NerveObject = require('./object'),
+    NerveModule = require('./module'),
     path = require('path'),
     fs = require('fs'),
     request = require('request'),
     ActiveUser = require('./active-user'),
     url = require('url'),
-    locales = require('./lib/locales'),
     debug = require('./lib/debug'),
     Page;
 
-Page = NerveObject.extend({
+Page = NerveModule.extend({
 
     baseTmplPath: './tmpl/commonjs/',
     pagesTmplPath: './tmpl/pages/commonjs/',
@@ -21,14 +20,14 @@ Page = NerveObject.extend({
     templateFooter: '',
 
     defaultOptions: {
-        isNeedActiveUser: true
+        isNeedActiveUser: true,
+        isShowErrorPage: true
     },
 
     init: function (app, options) {
-        debug.time('FULL PAGE TIME');
+        Page.super_.init.apply(this, arguments);
 
-        this.app = app;
-        this.options = _.assign({}, this.defaultOptions, options);
+        debug.time('FULL PAGE TIME');
 
         this.frontEndDir = this.app.getCfg('frontendDir');
 
@@ -71,25 +70,35 @@ Page = NerveObject.extend({
         }
 
         Promise.all(this.getResponsePromises()).then(function (responses) {
-            var vars;
-
             debug.timeEnd('GET API RESPONSE');
             debug.time('PAGE PROCESSING');
+            debug.time('GET LOCALES');
 
             this.getLocalesVars().then(function (localesVars) {
+                debug.timeEnd('GET LOCALES');
                 debug.time('TEMPLATE VARS');
-                vars = _.merge({}, responses[1], localesVars, this.getTemplateVars(), {
-                    activeUser: this.activeUser.toJSON()
-                });
-                debug.timeEnd('TEMPLATE VARS');
+                this.getTemplateVars()
+                    .then(function (vars) {
+                        vars = _.merge({}, responses[1], localesVars, vars, {
+                            activeUser: this.activeUser.toJSON()
+                        });
+                        debug.timeEnd('TEMPLATE VARS');
 
-                if (this.options.request.headers.accept.indexOf('application/json') !== -1) {
-                    this.send(JSON.stringify(vars));
-                } else {
-                    this.getHtml(vars).then(function (html) {
-                        this.send(html);
+                        if (this.options.request.headers.accept.indexOf('application/json') !== -1) {
+                            this.send(JSON.stringify(vars));
+                        } else {
+                            this.getHtml(vars)
+                                .then(function (html) {
+                                    this.send(html);
+                                }.bind(this))
+                                .catch(function (err) {
+                                    this.errorHandler(err);
+                                }.bind(this));
+                        }
+                    }.bind(this))
+                    .catch(function (err) {
+                        this.errorHandler(err);
                     }.bind(this));
-                }
             }.bind(this));
         }.bind(this));
     },
@@ -99,10 +108,6 @@ Page = NerveObject.extend({
             request: this.options.request,
             response: this.options.response
         });
-    },
-
-    getActiveUser: function () {
-        return this.activeUser;
     },
 
     getScheme: function () {
@@ -149,65 +154,6 @@ Page = NerveObject.extend({
         return [];
     },
 
-    getLocales: function () {
-        return null;
-    },
-
-    readLocales: function (pathToFile) {
-        var locales;
-
-        return new Promise(function (resolve, reject) {
-            fs.readFile(pathToFile, function (err, content) {
-                if (err) {
-                    debug.error(err);
-                    reject(err);
-                } else {
-                    locales = JSON.parse(content.toString());
-                    resolve(this.walkLocales(locales));
-                }
-            }.bind(this));
-        }.bind(this));
-    },
-
-    walkLocales: function (locales) {
-        var result = {};
-
-        Object.keys(locales).forEach(function (key) {
-            var item = locales[key];
-
-            if (_.isString(item)) {
-                result[key] = this.getText(item);
-            } else if (_.isObject(item) && item.text && (item.vars || item.ctx)) {
-                result[key] = this.getText(item.text, item.ctx, item.vars);
-            } else if (_.isObject(item)) {
-                result[key] = this.walkLocales(item);
-            }
-        }.bind(this));
-
-        return result;
-    },
-
-    getText: function (message, ctx, params) {
-        var localeStr;
-
-        if (_.isObject(ctx)) {
-            params = ctx;
-            ctx = '';
-        }
-
-        localeStr = locales.getText(message, this.activeUser.get('locale'), ctx) || message;
-
-        if (params) {
-            Object.keys(params).forEach(function (item) {
-                var reg = new RegExp('##' + item + '##', 'g');
-
-                localeStr = localeStr.replace(reg, params[item]);
-            });
-        }
-
-        return localeStr;
-    },
-
     getResponsePromises: function () {
         var promises = [];
 
@@ -223,58 +169,10 @@ Page = NerveObject.extend({
     },
 
     getTemplateVars: function () {
-        return {
-            css: this.getCss()
-        };
-    },
-
-    getLocalesVars: function () {
-        var currentLocale = this.activeUser.get('locale'),
-            localesPromise,
-            localesObject = {};
-
-        debug.time('GET LOCALES');
-
-        if (!this.constructor.locales) {
-            this.constructor.locales = {};
-            this.constructor.localesJson = {};
-        }
-
         return new Promise(function (resolve) {
-            if (this.constructor.locales[currentLocale] && this.constructor.localesJson[currentLocale]) {
-                resolve({
-                    locales: this.constructor.locales[currentLocale],
-                    localesJson: this.constructor.localesJson[currentLocale]
-                });
-
-                debug.timeEnd('GET LOCALES');
-            } else {
-                localesPromise = this.getLocales();
-
-                if (localesPromise) {
-                    localesPromise.then(function (locales) {
-                        if (Array.isArray(locales)) {
-                            locales.forEach(function (localesItem) {
-                                localesObject = _.merge(localesObject, localesItem);
-                            });
-                        } else {
-                            localesObject = locales;
-                        }
-
-                        this.constructor.locales[currentLocale] = localesObject;
-                        this.constructor.localesJson[currentLocale] = JSON.stringify(localesObject);
-
-                        resolve({
-                            locales: this.constructor.locales[currentLocale],
-                            localesJson: this.constructor.localesJson[currentLocale]
-                        });
-
-                        debug.timeEnd('GET LOCALES');
-                    }.bind(this));
-                } else {
-                    resolve({});
-                }
-            }
+            resolve({
+                css: this.getCss()
+            });
         }.bind(this));
     },
 
@@ -285,7 +183,7 @@ Page = NerveObject.extend({
 
         debug.time('RENDER');
 
-        return new Promise(function (resolve) {
+        return new Promise(function (resolve, reject) {
             Promise.all([
                 new Promise(function (resolve) {
                     debug.time('RENDER HEAD');
@@ -305,11 +203,32 @@ Page = NerveObject.extend({
                     debug.timeEnd('RENDER FOOTER');
                     resolve(footer);
                 }.bind(this))
-            ]).then(function () {
-                debug.timeEnd('RENDER');
-                resolve(head + content + footer);
-            });
+            ])
+                .then(function () {
+                    debug.timeEnd('RENDER');
+                    resolve(head + content + footer);
+                })
+                .catch(function (err) {
+                    reject(err);
+                });
         }.bind(this));
+    },
+
+    errorHandler: function (err) {
+        debug.error(err);
+
+        this.options.response.status(500);
+        if (this.app.getCfg('isTestServer')) {
+            this.send(err.stack.replace(/\n/g, '<br/>'));
+        } else {
+            if (this.options.isShowErrorPage) {
+                this.renderErrorPage(500);
+            }
+        }
+    },
+
+    renderErrorPage: function (status) {
+        this.send('');
     },
 
     send: function (html) {

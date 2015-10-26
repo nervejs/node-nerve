@@ -7,6 +7,8 @@ module.exports = function (Handlebars) {
         ifLt = require('./ifLt'),
         ifGt = require('./ifGt'),
         jsonEncode = require('./json-encode'),
+        jsonStringify = require('./json-stringify'),
+        jsonStipEndBrace = require('./json-stip-end-brace'),
         numberWidth = require('./number-width'),
         unlessEq = require('./unlessEq'),
         plural = require('./plural'),
@@ -19,6 +21,8 @@ module.exports = function (Handlebars) {
     ifGt(Handlebars);
     ifLt(Handlebars);
     jsonEncode(Handlebars);
+    jsonStringify(Handlebars);
+    jsonStipEndBrace(Handlebars);
     numberWidth(Handlebars);
     unlessEq(Handlebars);
     plural(Handlebars);
