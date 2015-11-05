@@ -2,16 +2,17 @@
     'use strict';
 
     var _ = require('lodash'),
-        NerveObject = require('./object'),
+        NerveModule = require('./module'),
         url = require('url'),
         request = require('request'),
         Api;
 
-    Api = NerveObject.extend({
+    Api = NerveModule.extend({
 
         init: function (page, options) {
             this.page = page;
             this.options = _.assign({}, this.defaultOptions, options);
+            this.response = null;
         },
 
         fetch: function () {
@@ -20,11 +21,17 @@
                     return this.request(item);
                 }.bind(this));
 
-                Promise.all(promises).then(function (responses) {
-                    var response = this.adapter(responses);
+                promises.push(this.getLocalesVars());
 
-                    resolve(response);
-                }.bind(this), reject);
+                Promise.all(promises)
+                    .then(function (responses) {
+                        this.response = this.adapter(responses);
+
+                        resolve(this.response);
+                    }.bind(this), reject)
+                    .catch(function (err) {
+                        reject(err);
+                    });
             }.bind(this));
         },
 
@@ -40,6 +47,10 @@
 
         adapter: function (responses) {
             return responses;
+        },
+
+        getResponse: function () {
+            return this.response;
         }
 
     });

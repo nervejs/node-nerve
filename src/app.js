@@ -12,6 +12,7 @@ var _ = require('lodash'),
     ActiveUser = require('./active-user'),
     handlebarsHelpers = require('./lib/handlebars-helpers/main'),
     debug = require('./lib/debug'),
+    locales = require('./lib/locales'),
     Handlebars = require('handlebars'),
     NerveApp;
 
@@ -38,6 +39,9 @@ NerveApp = NerveObject.extend({
 
         this.readCfg().then(function () {
             debug.setLevel(this.getCfg('logLevel'));
+            locales.init(this);
+
+            this.emit('ready');
         }.bind(this));
     },
 
@@ -84,6 +88,7 @@ NerveApp = NerveObject.extend({
 handlebarsHelpers(Handlebars);
 
 module.exports = {
+    Object: NerveObject,
     App: NerveApp,
     Page: Page,
     Api: Api,

@@ -53,9 +53,9 @@ Page = NerveObject.extend({
             var item = locales[key];
 
             if (_.isString(item)) {
-                result[key] = this.getText(item);
+                result[key] = this.getTextBySource(item);
             } else if (_.isObject(item) && item.text && (item.vars || item.ctx)) {
-                result[key] = this.getText(item.text, item.ctx, item.vars);
+                result[key] = this.getTextBySource(item.text, item.ctx, item.vars);
             } else if (_.isObject(item)) {
                 result[key] = this.walkLocales(item);
             }
@@ -64,7 +64,7 @@ Page = NerveObject.extend({
         return result;
     },
 
-    getText: function (message, ctx, params) {
+    getTextBySource: function (message, ctx, params) {
         var localeStr,
             globalParams = this.getLocalesParams();
 
@@ -76,7 +76,7 @@ Page = NerveObject.extend({
         localeStr = locales.getText(message, this.activeUser.get('locale'), ctx) || message;
 
         if (params || globalParams) {
-            params = _.merge({}, params, globalParams);
+            params = _.assign({}, params, globalParams);
 
             Object.keys(params).forEach(function (item) {
                 var reg = new RegExp('##' + item + '##', 'g');
@@ -86,6 +86,26 @@ Page = NerveObject.extend({
         }
 
         return localeStr;
+    },
+
+    getText: function (id) {
+        var currentLocale = this.activeUser.get('locale'),
+            localesObject = this.constructor.locales[currentLocale],
+            arIds = id.split('.'),
+            iteration = 0,
+            localesItem = localesObject;
+
+        while (localesItem && iteration < arIds.length) {
+            if (localesItem[arIds[iteration]]) {
+                localesItem = localesItem[arIds[iteration]];
+            } else {
+                localesItem = null;
+            }
+
+            iteration++;
+        }
+
+        return localesItem;
     },
 
     getLocalesParams: function () {
@@ -99,14 +119,12 @@ Page = NerveObject.extend({
 
         if (!this.constructor.locales) {
             this.constructor.locales = {};
-            this.constructor.localesJson = {};
         }
 
         return new Promise(function (resolve) {
-            if (this.constructor.locales[currentLocale] && this.constructor.localesJson[currentLocale]) {
+            if (this.constructor.locales[currentLocale]) {
                 resolve({
-                    locales: this.constructor.locales[currentLocale],
-                    localesJson: this.constructor.localesJson[currentLocale]
+                    locales: this.constructor.locales[currentLocale]
                 });
             } else {
                 localesPromise = this.getLocales();
@@ -115,18 +133,16 @@ Page = NerveObject.extend({
                     localesPromise.then(function (locales) {
                         if (Array.isArray(locales)) {
                             locales.forEach(function (localesItem) {
-                                localesObject = _.merge(localesObject, localesItem);
+                                localesObject = _.assign(localesObject, localesItem);
                             });
                         } else {
                             localesObject = locales;
                         }
 
                         this.constructor.locales[currentLocale] = localesObject;
-                        this.constructor.localesJson[currentLocale] = JSON.stringify(localesObject);
 
                         resolve({
-                            locales: this.constructor.locales[currentLocale],
-                            localesJson: this.constructor.localesJson[currentLocale]
+                            locales: this.constructor.locales[currentLocale]
                         });
                     }.bind(this));
                 } else {

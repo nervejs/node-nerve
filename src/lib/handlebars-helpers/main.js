@@ -3,6 +3,7 @@ module.exports = function (Handlebars) {
 
     var debug = require('./debug'),
         digitFormat = require('./digitFormat'),
+        getByKey = require('./get-by-key'),
         ifEq = require('./ifEq'),
         ifLt = require('./ifLt'),
         ifGt = require('./ifGt'),
@@ -17,6 +18,7 @@ module.exports = function (Handlebars) {
 
     debug(Handlebars);
     digitFormat(Handlebars);
+    getByKey(Handlebars);
     ifEq(Handlebars);
     ifGt(Handlebars);
     ifLt(Handlebars);

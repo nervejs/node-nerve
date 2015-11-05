@@ -41,9 +41,11 @@ module.exports = {
     },
 
     timeEnd: function (message) {
-        if (this.level > 2) {
-            console.timeEnd.apply(this, arguments);
-        }
+        try {
+            if (this.level > 2) {
+                console.timeEnd.apply(this, arguments);
+            }
+        } catch (ignore) {}
     }
 
 };

@@ -12,19 +12,30 @@ var _ = require('lodash'),
 
 Page = NerveModule.extend({
 
-    baseTmplPath: './tmpl/commonjs/',
-    pagesTmplPath: './tmpl/pages/commonjs/',
+    baseTmplPath: '',
+    pagesTmplPath: '',
 
     templateHead: '',
     template: '',
     templateFooter: '',
 
+    templateError404: '',
+    templateError500: '',
+
     defaultOptions: {
         isNeedActiveUser: true,
-        isShowErrorPage: true
+        isShowErrorPage: true,
+        type: null,
+        name: null
     },
 
     init: function (app, options) {
+        var templateHeadPath,
+            templateFooterPath,
+            templatePath,
+            templateError404Path,
+            templateError500Path;
+
         Page.super_.init.apply(this, arguments);
 
         debug.time('FULL PAGE TIME');
@@ -32,29 +43,44 @@ Page = NerveModule.extend({
         this.frontEndDir = this.app.getCfg('frontendDir');
 
         if (this.templateHead) {
-            this.templateHeadPath = path.resolve(this.frontEndDir, this.baseTmplPath, this.templateHead);
+            templateHeadPath = path.resolve(this.frontEndDir, this.baseTmplPath, this.templateHead);
             if (this.app.getCfg('isClearTemplateCache')) {
-                delete require.cache[require.resolve(this.templateHeadPath)];
+                delete require.cache[require.resolve(templateHeadPath)];
             }
-            this.tmplHead = require(this.templateHeadPath);
+            this.tmplHead = require(templateHeadPath);
         }
 
         if (this.templateFooter) {
-            this.templateFooterPath = path.resolve(this.frontEndDir, this.baseTmplPath, this.templateFooter);
+            templateFooterPath = path.resolve(this.frontEndDir, this.baseTmplPath, this.templateFooter);
             if (this.app.getCfg('isClearTemplateCache')) {
-                delete require.cache[require.resolve(this.templateFooterPath)];
+                delete require.cache[require.resolve(templateFooterPath)];
             }
-            this.tmplFooter = require(this.templateFooterPath);
+            this.tmplFooter = require(templateFooterPath);
         }
 
-        this.templatePath = path.resolve(this.frontEndDir, this.pagesTmplPath, this.template);
-        if (this.app.getCfg('isClearTemplateCache')) {
-            delete require.cache[require.resolve(this.templatePath)];
+        if (this.template) {
+            templatePath = path.resolve(this.frontEndDir, this.pagesTmplPath, this.template);
+            if (this.app.getCfg('isClearTemplateCache')) {
+                delete require.cache[require.resolve(templatePath)];
+            }
+            this.tmpl = require(templatePath);
         }
-        this.tmpl = require(this.templatePath);
 
-        //this.isUseMin = false;
-        //this.isUseHash = false;
+        if (this.templateError404) {
+            templateError404Path = path.resolve(this.frontEndDir, this.baseTmplPath, this.templateError404);
+            if (this.app.getCfg('isClearTemplateCache')) {
+                delete require.cache[require.resolve(templateError404Path)];
+            }
+            this.tmplError404 = require(templateError404Path);
+        }
+
+        if (this.templateError500) {
+            templateError500Path = path.resolve(this.frontEndDir, this.baseTmplPath, this.templateError500);
+            if (this.app.getCfg('isClearTemplateCache')) {
+                delete require.cache[require.resolve(templateError500Path)];
+            }
+            this.tmplError500 = require(templateError500Path);
+        }
 
         this.initActiveUser();
 
@@ -65,42 +91,51 @@ Page = NerveModule.extend({
                 request: this.options.request,
                 response: this.options.response
             });
+            this.api.setActiveUser(this.activeUser);
         } else {
             debug.log('API IS EMPTY');
         }
 
-        Promise.all(this.getResponsePromises()).then(function (responses) {
-            debug.timeEnd('GET API RESPONSE');
-            debug.time('PAGE PROCESSING');
-            debug.time('GET LOCALES');
+        Promise.all(this.getResponsePromises())
+            .then(function (responses) {
+                debug.timeEnd('GET API RESPONSE');
+                debug.time('PAGE PROCESSING');
+                debug.time('GET LOCALES');
 
-            this.getLocalesVars().then(function (localesVars) {
-                debug.timeEnd('GET LOCALES');
-                debug.time('TEMPLATE VARS');
-                this.getTemplateVars()
-                    .then(function (vars) {
-                        vars = _.merge({}, responses[1], localesVars, vars, {
-                            activeUser: this.activeUser.toJSON()
-                        });
-                        debug.timeEnd('TEMPLATE VARS');
+                this.getLocalesVars()
+                    .then(function (localesVars) {
+                        debug.timeEnd('GET LOCALES');
+                        debug.time('TEMPLATE VARS');
+                        this.getTemplateVars()
+                            .then(function (vars) {
+                                debug.timeEnd('TEMPLATE VARS');
 
-                        if (this.options.request.headers.accept.indexOf('application/json') !== -1) {
-                            this.send(JSON.stringify(vars));
-                        } else {
-                            this.getHtml(vars)
-                                .then(function (html) {
-                                    this.send(html);
-                                }.bind(this))
-                                .catch(function (err) {
-                                    this.errorHandler(err);
-                                }.bind(this));
-                        }
+                                vars = _.assign({}, responses[1], localesVars, vars);
+                                _.merge(vars.activeUser, this.activeUser.toJSON());
+
+                                if (this.options.request.headers.accept.indexOf('application/json') !== -1) {
+                                    this.send(JSON.stringify(vars));
+                                } else {
+                                    this.getHtml(vars)
+                                        .then(function (html) {
+                                            this.send(html);
+                                        }.bind(this))
+                                        .catch(function (err) {
+                                            this.errorHandler(err);
+                                        }.bind(this));
+                                }
+                            }.bind(this))
+                            .catch(function (err) {
+                                this.errorHandler(err);
+                            }.bind(this));
                     }.bind(this))
                     .catch(function (err) {
                         this.errorHandler(err);
                     }.bind(this));
+            }.bind(this))
+            .catch(function (err) {
+                this.errorHandler(err);
             }.bind(this));
-        }.bind(this));
     },
 
     initActiveUser: function () {
@@ -110,8 +145,20 @@ Page = NerveModule.extend({
         });
     },
 
+    getType: function () {
+        return this.options.type;
+    },
+
+    getName: function () {
+        return this.options.name;
+    },
+
     getScheme: function () {
-        return 'http';
+        return this.options.request.protocol;
+    },
+
+    getRequestParam: function (paramName) {
+        return this.options.request.params[paramName];
     },
 
     getStaticHost: function () {
@@ -126,12 +173,16 @@ Page = NerveModule.extend({
         return '//' + this.app.getCfg('cssHost');
     },
 
+    getPrefixStaticVersion: function () {
+        return '_' + this.app.getCfg('prefixStaticVersion');
+    },
+
     getCssVersion: function (cssName) {
-        return this.isUseHash ? '_' + Math.random().toString(34).slice(2) : '';
+        return this.app.getCfg('isUseCssHash') ? this.getPrefixStaticVersion() + Math.random().toString(34).slice(2) : '';
     },
 
     getJsVersion: function (cssName) {
-        return this.isUseHash ? '_' + Math.random().toString(34).slice(2) : '';
+        return this.app.getCfg('isUseJsHash') ? this.getPrefixStaticVersion() + Math.random().toString(34).slice(2) : '';
     },
 
     getCssUrl: function (cssName) {
@@ -141,8 +192,8 @@ Page = NerveModule.extend({
     getJsUrl: function (jsName) {
         var jsUrl;
 
-        if (this.isUseMin) {
-            jsUrl = url.resolve(this.getJsHost(), 'min', jsName + this.getJsVersion(jsName) + '.js');
+        if (this.app.getCfg('isUseJsMin')) {
+            jsUrl = url.resolve(this.getJsHost(), 'min/') + jsName + this.getJsVersion(jsName) + '.js';
         } else {
             jsUrl = url.resolve(this.getJsHost(), jsName + this.getJsVersion(jsName) + '.js');
         }
@@ -171,12 +222,15 @@ Page = NerveModule.extend({
     getTemplateVars: function () {
         return new Promise(function (resolve) {
             resolve({
+                request: {
+                    get: this.options.request.query
+                },
                 css: this.getCss()
             });
         }.bind(this));
     },
 
-    getHtml: function (vars) {
+    getHtml: function (vars, contentTmpl) {
         var head,
             content,
             footer;
@@ -193,7 +247,7 @@ Page = NerveModule.extend({
                 }.bind(this)),
                 new Promise(function (resolve) {
                     debug.time('RENDER CONTENT');
-                    content = this.tmpl(vars);
+                    content = _.isFunction(contentTmpl) ? contentTmpl(vars) : this.tmpl(vars);
                     debug.timeEnd('RENDER CONTENT');
                     resolve(content);
                 }.bind(this)),
@@ -214,27 +268,58 @@ Page = NerveModule.extend({
         }.bind(this));
     },
 
-    errorHandler: function (err) {
-        debug.error(err);
+    getContentType: function () {
+        return 'text/html';
+    },
 
-        this.options.response.status(500);
+    errorHandler: function (err) {
+        debug.error(err.toString());
+
+        this.options.response.status(err.statusCode || 500);
         if (this.app.getCfg('isTestServer')) {
-            this.send(err.stack.replace(/\n/g, '<br/>'));
+            this.send(err.stack.replace(/\n/g, '<br/>'), 'text/html');
         } else {
             if (this.options.isShowErrorPage) {
-                this.renderErrorPage(500);
+                this.renderErrorPage(err.statusCode || 500);
             }
         }
     },
 
     renderErrorPage: function (status) {
-        this.send('');
+        if (this['tmplError' + status]) {
+            this.getLocalesVars()
+                .then(function (localesVars) {
+                    this.getTemplateVars()
+                        .then(function (vars) {
+                            this.getHtml(_.assign({}, vars, localesVars, {
+                                activeUser: this.activeUser.toJSON(),
+                                statusCode: status
+                            }), this['tmplError' + status])
+                                .then(function (html) {
+                                    this.send(html);
+                                }.bind(this))
+                                .catch(function (err) {
+                                    this.send('');
+                                }.bind(this));
+                        }.bind(this))
+                        .catch(function (err) {
+                            debug.error(err.toString());
+                            this.send('');
+                        }.bind(this));
+                }.bind(this))
+                .catch(function (err) {
+                    debug.error(err.toString());
+                    this.send('');
+                }.bind(this));
+        } else {
+            this.send('');
+        }
     },
 
-    send: function (html) {
+    send: function (html, contentType) {
         this.options.response.header({
             'Cache-Control': 'no-cache, no-store',
-            'Content-type': 'text/html; charset=utf-8'
+            'Content-type': (contentType || this.getContentType()) + '; charset=utf-8'
         });
 
         debug.timeEnd('PAGE PROCESSING');
