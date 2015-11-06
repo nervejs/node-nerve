@@ -11,6 +11,7 @@
 
         init: function (page, options) {
             this.page = page;
+            this.app = page.app;
             this.options = _.assign({}, this.defaultOptions, options);
             this.response = null;
         },
