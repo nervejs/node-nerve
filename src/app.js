@@ -27,6 +27,8 @@ NerveApp = NerveObject.extend({
         this.server.disable('x-powered-by');
         this.server.disable('etag');
 
+        this.isReady = false;
+
         this.server.use(function (req, res, next) {
             req.id = uuid.v4();
             next();
@@ -41,6 +43,7 @@ NerveApp = NerveObject.extend({
             debug.setLevel(this.getCfg('logLevel'));
             locales.init(this);
 
+            this.isReady = true;
             this.emit('ready');
         }.bind(this));
     },
@@ -79,8 +82,56 @@ NerveApp = NerveObject.extend({
         });
     },
 
+    setCfg: function (key, value) {
+        var arIds = key.split('.'),
+            cfgItem = this.config;
+
+        arIds.forEach(function (item, index) {
+
+            if (!cfgItem[item]) {
+                cfgItem = {};
+            }
+
+            if (index === arIds.length - 1) {
+                cfgItem[item] = value;
+            } else {
+                cfgItem = cfgItem[item];
+            }
+        }.bind(this));
+
+        return this;
+    },
+
     getCfg: function (key) {
-        return this.config[key];
+        var arIds = key.split('.'),
+            iteration = 0,
+            cfgItem = this.config;
+
+        while (cfgItem && iteration < arIds.length) {
+            if (!_.isUndefined(cfgItem[arIds[iteration]])) {
+                cfgItem = cfgItem[arIds[iteration]];
+            } else {
+                cfgItem = null;
+            }
+
+            iteration++;
+        }
+
+        return cfgItem;
+    },
+
+    setDebugLevel: function (level) {
+        debug.setLevel(level);
+    },
+
+    ready: function () {
+        return new Promise(function (resolve) {
+            if (this.isReady) {
+                resolve();
+            } else {
+                this.on('ready', resolve);
+            }
+        }.bind(this));
     }
 
 });

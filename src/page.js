@@ -40,7 +40,7 @@ Page = NerveModule.extend({
 
         debug.time('FULL PAGE TIME');
 
-        this.frontEndDir = this.app.getCfg('frontendDir');
+        this.frontEndDir = this.getFrontendDir();
 
         if (this.templateHead) {
             templateHeadPath = path.resolve(this.frontEndDir, this.baseTmplPath, this.templateHead);
@@ -145,6 +145,10 @@ Page = NerveModule.extend({
         });
     },
 
+    getFrontendDir: function () {
+        return this.app.getCfg('frontendDir');
+    },
+
     getType: function () {
         return this.options.type;
     },
@@ -246,9 +250,16 @@ Page = NerveModule.extend({
                     resolve(head);
                 }.bind(this)),
                 new Promise(function (resolve) {
-                    debug.time('RENDER CONTENT');
-                    content = _.isFunction(contentTmpl) ? contentTmpl(vars) : this.tmpl(vars);
-                    debug.timeEnd('RENDER CONTENT');
+                    var tmpl = _.isFunction(contentTmpl) ? contentTmpl : this.tmpl;
+
+                    if (tmpl) {
+                        debug.time('RENDER CONTENT');
+                        content = tmpl(vars);
+                        debug.timeEnd('RENDER CONTENT');
+                    } else {
+                        debug.log('EMPTY CONTENT TEMPLATE');
+                        content = '';
+                    }
                     resolve(content);
                 }.bind(this)),
                 new Promise(function (resolve) {
@@ -273,7 +284,7 @@ Page = NerveModule.extend({
     },
 
     errorHandler: function (err) {
-        debug.error(err.toString());
+        debug.error(err.stack ? err.stack : err);
 
         this.options.response.status(err.statusCode || 500);
         if (this.app.getCfg('isTestServer')) {

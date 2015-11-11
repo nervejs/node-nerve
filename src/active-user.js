@@ -6,7 +6,8 @@
 
     ActiveUser = NerveObject.extend({
 
-        init: function (options) {
+        init: function (app, options) {
+            this.app = app;
             this.options = options;
             this.attr = {};
         },

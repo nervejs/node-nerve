@@ -9,7 +9,7 @@ module.exports = {
     log: function (message) {
         var args = arguments;
 
-        if (this.level > 0) {
+        if (this.level > 10) {
             setTimeout(function () {
                 console.log.apply(this, args);
             });
@@ -29,7 +29,7 @@ module.exports = {
     debug: function (message) {
         var args = arguments;
 
-        if (this.level > 1) {
+        if (this.level > 20) {
             setTimeout(function () {
                 console.log.apply(this, args);
             });
@@ -42,7 +42,7 @@ module.exports = {
 
     timeEnd: function (message) {
         try {
-            if (this.level > 2) {
+            if (this.level > 30) {
                 console.timeEnd.apply(this, arguments);
             }
         } catch (ignore) {}
