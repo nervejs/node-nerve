@@ -110,7 +110,7 @@ Page = NerveModule.extend({
                             .then(function (vars) {
                                 debug.timeEnd('TEMPLATE VARS');
 
-                                vars = _.assign({}, responses[1], localesVars, vars);
+                                vars = _.assign({}, responses[0], localesVars, vars);
                                 _.merge(vars.activeUser, this.activeUser.toJSON());
 
                                 if (this.options.request.headers.accept.indexOf('application/json') !== -1) {
@@ -210,17 +210,37 @@ Page = NerveModule.extend({
     },
 
     getResponsePromises: function () {
-        var promises = [];
+        //var promises = [];
+        //
+        //if (this.options.isNeedActiveUser) {
+        //    promises.push(this.activeUser.request());
+        //
+        //}
+        //
+        //if (this.api) {
+        //    promises.push();
+        //}
+        //
+        //return promises;
 
-        if (this.options.isNeedActiveUser) {
-            promises.push(this.activeUser.request());
-        }
-
-        if (this.api) {
-            promises.push(this.api.fetch());
-        }
-
-        return promises;
+        return [new Promise(function (resolve, reject) {
+            new Promise(function (userResolve, userReject) {
+                if (this.options.isNeedActiveUser) {
+                    this.activeUser.request()
+                        .then(userResolve)
+                        .catch(userReject);
+                } else {
+                    userResolve()
+                }
+            }.bind(this))
+                .then(function () {
+                    this.api.fetch()
+                        .then(function (response) {
+                            resolve(response);
+                        })
+                        .catch(reject);
+                }.bind(this));
+        }.bind(this))];
     },
 
     getTemplateVars: function () {
@@ -229,7 +249,11 @@ Page = NerveModule.extend({
                 request: {
                     get: this.options.request.query
                 },
-                css: this.getCss()
+                css: this.getCss(),
+                hosts: {
+                    staticJs: this.getJsHost(),
+                    staticCss: this.getCssHost()
+                }
             });
         }.bind(this));
     },
