@@ -36,106 +36,110 @@ Page = NerveModule.extend({
             templateError404Path,
             templateError500Path;
 
-        Page.super_.init.apply(this, arguments);
+        try {
+            Page.super_.init.apply(this, arguments);
 
-        debug.time('FULL PAGE TIME');
+            debug.time('FULL PAGE TIME');
 
-        this.frontEndDir = this.getFrontendDir();
+            this.frontEndDir = this.getFrontendDir();
 
-        if (this.templateHead) {
-            templateHeadPath = path.resolve(this.frontEndDir, this.baseTmplPath, this.templateHead);
-            if (this.app.getCfg('isClearTemplateCache')) {
-                delete require.cache[require.resolve(templateHeadPath)];
+            if (this.templateHead) {
+                templateHeadPath = path.resolve(this.frontEndDir, this.baseTmplPath, this.templateHead);
+                if (this.app.getCfg('isClearTemplateCache')) {
+                    delete require.cache[require.resolve(templateHeadPath)];
+                }
+                this.tmplHead = require(templateHeadPath);
             }
-            this.tmplHead = require(templateHeadPath);
-        }
 
-        if (this.templateFooter) {
-            templateFooterPath = path.resolve(this.frontEndDir, this.baseTmplPath, this.templateFooter);
-            if (this.app.getCfg('isClearTemplateCache')) {
-                delete require.cache[require.resolve(templateFooterPath)];
+            if (this.templateFooter) {
+                templateFooterPath = path.resolve(this.frontEndDir, this.baseTmplPath, this.templateFooter);
+                if (this.app.getCfg('isClearTemplateCache')) {
+                    delete require.cache[require.resolve(templateFooterPath)];
+                }
+                this.tmplFooter = require(templateFooterPath);
             }
-            this.tmplFooter = require(templateFooterPath);
-        }
 
-        if (this.template) {
-            templatePath = path.resolve(this.frontEndDir, this.pagesTmplPath, this.template);
-            if (this.app.getCfg('isClearTemplateCache')) {
-                delete require.cache[require.resolve(templatePath)];
+            if (this.template) {
+                templatePath = path.resolve(this.frontEndDir, this.pagesTmplPath, this.template);
+                if (this.app.getCfg('isClearTemplateCache')) {
+                    delete require.cache[require.resolve(templatePath)];
+                }
+                this.tmpl = require(templatePath);
             }
-            this.tmpl = require(templatePath);
-        }
 
-        if (this.templateError404) {
-            templateError404Path = path.resolve(this.frontEndDir, this.baseTmplPath, this.templateError404);
-            if (this.app.getCfg('isClearTemplateCache')) {
-                delete require.cache[require.resolve(templateError404Path)];
+            if (this.templateError404) {
+                templateError404Path = path.resolve(this.frontEndDir, this.baseTmplPath, this.templateError404);
+                if (this.app.getCfg('isClearTemplateCache')) {
+                    delete require.cache[require.resolve(templateError404Path)];
+                }
+                this.tmplError404 = require(templateError404Path);
             }
-            this.tmplError404 = require(templateError404Path);
-        }
 
-        if (this.templateError500) {
-            templateError500Path = path.resolve(this.frontEndDir, this.baseTmplPath, this.templateError500);
-            if (this.app.getCfg('isClearTemplateCache')) {
-                delete require.cache[require.resolve(templateError500Path)];
+            if (this.templateError500) {
+                templateError500Path = path.resolve(this.frontEndDir, this.baseTmplPath, this.templateError500);
+                if (this.app.getCfg('isClearTemplateCache')) {
+                    delete require.cache[require.resolve(templateError500Path)];
+                }
+                this.tmplError500 = require(templateError500Path);
             }
-            this.tmplError500 = require(templateError500Path);
+
+            this.initActiveUser();
+
+            debug.time('GET API RESPONSE');
+
+            if (this.Api) {
+                this.api = new this.Api(this, {
+                    request: this.options.request,
+                    response: this.options.response
+                });
+                this.api.setActiveUser(this.activeUser);
+            } else {
+                debug.log('API IS EMPTY');
+            }
+
+            Promise.all(this.getResponsePromises())
+                .then(function (responses) {
+                    debug.timeEnd('GET API RESPONSE');
+                    debug.time('PAGE PROCESSING');
+                    debug.time('GET LOCALES');
+
+                    this.getLocalesVars()
+                        .then(function (localesVars) {
+                            debug.timeEnd('GET LOCALES');
+                            debug.time('TEMPLATE VARS');
+                            this.getTemplateVars()
+                                .then(function (vars) {
+                                    debug.timeEnd('TEMPLATE VARS');
+
+                                    vars = _.assign({}, responses[0], localesVars, vars);
+                                    _.merge(vars.activeUser, this.activeUser.toJSON());
+
+                                    if (this.options.request.headers.accept.indexOf('application/json') !== -1) {
+                                        this.send(JSON.stringify(vars));
+                                    } else {
+                                        this.getHtml(vars)
+                                            .then(function (html) {
+                                                this.send(html);
+                                            }.bind(this))
+                                            .catch(function (err) {
+                                                this.errorHandler(err);
+                                            }.bind(this));
+                                    }
+                                }.bind(this))
+                                .catch(function (err) {
+                                    this.errorHandler(err);
+                                }.bind(this));
+                        }.bind(this))
+                        .catch(function (err) {
+                            this.errorHandler(err);
+                        }.bind(this));
+                }.bind(this))
+                .catch(function (err) {
+                    this.errorHandler(err);
+                }.bind(this));
+        } catch (err) {
+            this.errorHandler(err);
         }
-
-        this.initActiveUser();
-
-        debug.time('GET API RESPONSE');
-
-        if (this.Api) {
-            this.api = new this.Api(this, {
-                request: this.options.request,
-                response: this.options.response
-            });
-            this.api.setActiveUser(this.activeUser);
-        } else {
-            debug.log('API IS EMPTY');
-        }
-
-        Promise.all(this.getResponsePromises())
-            .then(function (responses) {
-                debug.timeEnd('GET API RESPONSE');
-                debug.time('PAGE PROCESSING');
-                debug.time('GET LOCALES');
-
-                this.getLocalesVars()
-                    .then(function (localesVars) {
-                        debug.timeEnd('GET LOCALES');
-                        debug.time('TEMPLATE VARS');
-                        this.getTemplateVars()
-                            .then(function (vars) {
-                                debug.timeEnd('TEMPLATE VARS');
-
-                                vars = _.assign({}, responses[0], localesVars, vars);
-                                _.merge(vars.activeUser, this.activeUser.toJSON());
-
-                                if (this.options.request.headers.accept.indexOf('application/json') !== -1) {
-                                    this.send(JSON.stringify(vars));
-                                } else {
-                                    this.getHtml(vars)
-                                        .then(function (html) {
-                                            this.send(html);
-                                        }.bind(this))
-                                        .catch(function (err) {
-                                            this.errorHandler(err);
-                                        }.bind(this));
-                                }
-                            }.bind(this))
-                            .catch(function (err) {
-                                this.errorHandler(err);
-                            }.bind(this));
-                    }.bind(this))
-                    .catch(function (err) {
-                        this.errorHandler(err);
-                    }.bind(this));
-            }.bind(this))
-            .catch(function (err) {
-                this.errorHandler(err);
-            }.bind(this));
     },
 
     initActiveUser: function () {
@@ -308,11 +312,11 @@ Page = NerveModule.extend({
     },
 
     errorHandler: function (err) {
-        debug.error(err.stack ? err.stack : err);
+        debug.error(err.stack ? err + err.stack : err);
 
         this.options.response.status(err.statusCode || 500);
         if (this.app.getCfg('isTestServer')) {
-            this.send(err.stack.replace(/\n/g, '<br/>'), 'text/html');
+            this.send(err + '<br/>' + err.stack.replace(/\n/g, '<br/>'), 'text/html');
         } else {
             if (this.options.isShowErrorPage) {
                 this.renderErrorPage(err.statusCode || 500);
