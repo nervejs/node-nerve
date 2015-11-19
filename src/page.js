@@ -189,7 +189,7 @@ Page = NerveModule.extend({
         return this.app.getCfg('isUseCssHash') ? this.getPrefixStaticVersion() + Math.random().toString(34).slice(2) : '';
     },
 
-    getJsVersion: function (cssName) {
+    getJsVersion: function (jsName) {
         return this.app.getCfg('isUseJsHash') ? this.getPrefixStaticVersion() + Math.random().toString(34).slice(2) : '';
     },
 
@@ -214,19 +214,6 @@ Page = NerveModule.extend({
     },
 
     getResponsePromises: function () {
-        //var promises = [];
-        //
-        //if (this.options.isNeedActiveUser) {
-        //    promises.push(this.activeUser.request());
-        //
-        //}
-        //
-        //if (this.api) {
-        //    promises.push();
-        //}
-        //
-        //return promises;
-
         return [new Promise(function (resolve, reject) {
             new Promise(function (userResolve, userReject) {
                 if (this.options.isNeedActiveUser) {
