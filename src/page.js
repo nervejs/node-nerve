@@ -39,7 +39,7 @@ Page = NerveModule.extend({
         try {
             Page.super_.init.apply(this, arguments);
 
-            debug.time('FULL PAGE TIME');
+            this.time('FULL PAGE TIME');
 
             this.frontEndDir = this.getFrontendDir();
 
@@ -85,7 +85,7 @@ Page = NerveModule.extend({
 
             this.initActiveUser();
 
-            debug.time('GET API RESPONSE');
+            this.time('GET API RESPONSE');
 
             if (this.Api) {
                 this.api = new this.Api(this, {
@@ -94,22 +94,22 @@ Page = NerveModule.extend({
                 });
                 this.api.setActiveUser(this.activeUser);
             } else {
-                debug.log('API IS EMPTY');
+                this.log('API IS EMPTY');
             }
 
             Promise.all(this.getResponsePromises())
                 .then(function (responses) {
-                    debug.timeEnd('GET API RESPONSE');
-                    debug.time('PAGE PROCESSING');
-                    debug.time('GET LOCALES');
+                    this.timeEnd('GET API RESPONSE');
+                    this.time('PAGE PROCESSING');
+                    this.time('GET LOCALES');
 
                     this.getLocalesVars()
                         .then(function (localesVars) {
-                            debug.timeEnd('GET LOCALES');
-                            debug.time('TEMPLATE VARS');
+                            this.timeEnd('GET LOCALES');
+                            this.time('TEMPLATE VARS');
                             this.getTemplateVars()
                                 .then(function (vars) {
-                                    debug.timeEnd('TEMPLATE VARS');
+                                    this.timeEnd('TEMPLATE VARS');
 
                                     vars = _.assign({}, responses[0], localesVars, vars);
                                     _.merge(vars.activeUser, this.activeUser.toJSON());
@@ -201,7 +201,6 @@ Page = NerveModule.extend({
         } else {
             jsUrl = url.resolve(this.getJsHost(), this.getJsVersion(jsName) + '.js');
         }
-        console.log(jsName, jsUrl);
 
         return jsUrl;
     },
@@ -246,45 +245,57 @@ Page = NerveModule.extend({
         }.bind(this));
     },
 
+    log: function (message) {
+        debug.log(this.getName() + ': ' + message);
+    },
+
+    time: function (message) {
+        debug.time(this.getName() + ': ' + message);
+    },
+
+    timeEnd: function (message) {
+        debug.timeEnd(this.getName() + ': ' + message);
+    },
+
     getHtml: function (vars, contentTmpl) {
         var head,
             content,
             footer;
 
-        debug.time('RENDER');
+        this.time('RENDER');
 
         return new Promise(function (resolve, reject) {
             Promise.all([
                 new Promise(function (resolve) {
-                    debug.time('RENDER HEAD');
+                    this.time('RENDER HEAD');
                     head = this.tmplHead ? this.tmplHead(vars) : '';
-                    debug.timeEnd('RENDER HEAD');
+                    this.timeEnd('RENDER HEAD');
                     resolve(head);
                 }.bind(this)),
                 new Promise(function (resolve) {
                     var tmpl = _.isFunction(contentTmpl) ? contentTmpl : this.tmpl;
 
                     if (tmpl) {
-                        debug.time('RENDER CONTENT');
+                        this.time('RENDER CONTENT');
                         content = tmpl(vars);
-                        debug.timeEnd('RENDER CONTENT');
+                        this.timeEnd('RENDER CONTENT');
                     } else {
-                        debug.log('EMPTY CONTENT TEMPLATE');
+                        this.log('EMPTY CONTENT TEMPLATE');
                         content = '';
                     }
                     resolve(content);
                 }.bind(this)),
                 new Promise(function (resolve) {
-                    debug.time('RENDER FOOTER');
+                    this.time('RENDER FOOTER');
                     footer = this.tmplFooter ? this.tmplFooter(vars) : '';
-                    debug.timeEnd('RENDER FOOTER');
+                    this.timeEnd('RENDER FOOTER');
                     resolve(footer);
                 }.bind(this))
             ])
                 .then(function () {
-                    debug.timeEnd('RENDER');
+                    this.timeEnd('RENDER');
                     resolve(head + content + footer);
-                })
+                }.bind(this))
                 .catch(function (err) {
                     reject(err);
                 });
@@ -345,8 +356,8 @@ Page = NerveModule.extend({
             'Content-type': (contentType || this.getContentType()) + '; charset=utf-8'
         });
 
-        debug.timeEnd('PAGE PROCESSING');
-        debug.timeEnd('FULL PAGE TIME');
+        this.timeEnd('PAGE PROCESSING');
+        this.timeEnd('FULL PAGE TIME');
         this.options.response.send(html);
     }
 
