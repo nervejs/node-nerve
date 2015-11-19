@@ -28,6 +28,9 @@ NerveApp = NerveObject.extend({
         this.server.disable('etag');
 
         this.isReady = false;
+        this.routes = {};
+        this.JS_VERSIONS = {};
+        this.CSS_VERSIONS = {};
 
         this.server.use(function (req, res, next) {
             req.id = uuid.v4();
@@ -35,7 +38,6 @@ NerveApp = NerveObject.extend({
         });
 
         this.router = new Router(this);
-        this.routes = {};
 
         this.environment = process.env.NODE_NERVE_ENV || 'dev';
 

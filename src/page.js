@@ -181,30 +181,27 @@ Page = NerveModule.extend({
         return '//' + this.app.getCfg('cssHost');
     },
 
-    getPrefixStaticVersion: function () {
-        return '_' + this.app.getCfg('prefixStaticVersion');
-    },
-
     getCssVersion: function (cssName) {
-        return this.app.getCfg('isUseCssHash') ? this.getPrefixStaticVersion() + Math.random().toString(34).slice(2) : '';
+        return this.app.getCfg('isUseCssHash') ? (this.app.CSS_VERSIONS[cssName] || cssName) : cssName;
     },
 
     getJsVersion: function (jsName) {
-        return this.app.getCfg('isUseJsHash') ? this.getPrefixStaticVersion() + Math.random().toString(34).slice(2) : '';
+        return this.app.getCfg('isUseJsHash') ? (this.app.JS_VERSIONS[jsName] || jsName) : jsName;
     },
 
     getCssUrl: function (cssName) {
-        return url.resolve(this.getCssHost(), cssName + this.getCssVersion(cssName) + '.css');
+        return url.resolve(this.getCssHost(), this.getCssVersion(cssName) + '.css');
     },
 
     getJsUrl: function (jsName) {
         var jsUrl;
 
         if (this.app.getCfg('isUseJsMin')) {
-            jsUrl = url.resolve(this.getJsHost(), 'min/') + jsName + this.getJsVersion(jsName) + '.js';
+            jsUrl = url.resolve(this.getJsHost(), 'min/') + this.getJsVersion(jsName) + '.js';
         } else {
-            jsUrl = url.resolve(this.getJsHost(), jsName + this.getJsVersion(jsName) + '.js');
+            jsUrl = url.resolve(this.getJsHost(), this.getJsVersion(jsName) + '.js');
         }
+        console.log(jsName, jsUrl);
 
         return jsUrl;
     },
