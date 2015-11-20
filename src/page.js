@@ -39,6 +39,7 @@ Page = NerveModule.extend({
         try {
             Page.super_.init.apply(this, arguments);
 
+            this.startTime = Date.now();
             this.time('FULL PAGE TIME');
 
             this.frontEndDir = this.getFrontendDir();
@@ -99,6 +100,7 @@ Page = NerveModule.extend({
 
             Promise.all(this.getResponsePromises())
                 .then(function (responses) {
+                    this.startProcessingTime = Date.now();
                     this.timeEnd('GET API RESPONSE');
                     this.time('PAGE PROCESSING');
                     this.time('GET LOCALES');
@@ -358,7 +360,13 @@ Page = NerveModule.extend({
 
         this.timeEnd('PAGE PROCESSING');
         this.timeEnd('FULL PAGE TIME');
+
+        this.processingTime = Date.now() - this.startProcessingTime;
+        this.fullTime = Date.now() - this.startTime;
+
         this.options.response.send(html);
+
+        this.emit('send');
     }
 
 });
