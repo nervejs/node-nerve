@@ -116,7 +116,7 @@ Page = NerveModule.extend({
                                     vars = _.assign({}, responses[0], localesVars, vars);
                                     _.merge(vars.activeUser, this.activeUser.toJSON());
 
-                                    if (this.options.request.headers.accept.indexOf('application/json') !== -1) {
+                                    if (this.options.request.headers && this.options.request.headers.accept && this.options.request.headers.accept.indexOf('application/json') !== -1) {
                                         this.send(JSON.stringify(vars));
                                     } else {
                                         this.getHtml(vars)
