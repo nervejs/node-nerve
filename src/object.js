@@ -16,8 +16,7 @@ util.inherits(NerveObject, EventEmitter);
 
 NerveObject.extend = function (proto) {
     var Parent = this,
-        Child,
-        Surrogate;
+        Child;
 
     Child = function () {
         Parent.apply(this, arguments);
@@ -25,17 +24,9 @@ NerveObject.extend = function (proto) {
 
         return this;
     };
-
-    Surrogate = function () {
-        this.constructor = Child;
-        this.super_ = Parent.prototype;
-    };
-    Surrogate.prototype = Parent.prototype;
-    Child.prototype = new Surrogate();
-    Child.super_ = Parent.prototype;
-
-    _.merge(Child, Parent);
-    _.merge(Child.prototype, proto);
+    _.assign(Child, Parent);
+    util.inherits(Child, Parent);
+    _.assign(Child.prototype, proto);
     Child.super_ = Parent.prototype;
 
     return Child;

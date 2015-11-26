@@ -3,8 +3,6 @@
 var _ = require('lodash'),
     NerveModule = require('./module'),
     path = require('path'),
-    fs = require('fs'),
-    request = require('request'),
     ActiveUser = require('./active-user'),
     url = require('url'),
     debug = require('./lib/debug'),
