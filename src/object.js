@@ -20,7 +20,6 @@ NerveObject.extend = function (proto) {
 
     Child = function () {
         Parent.apply(this, arguments);
-        Child.prototype.defaultOptions && console.log(Child.prototype.defaultOptions.name);
         this.constructor = Child;
 
         return this;
