@@ -20,6 +20,7 @@ NerveObject.extend = function (proto) {
 
     Child = function () {
         Parent.apply(this, arguments);
+        Child.prototype.defaultOptions && console.log(Child.prototype.defaultOptions.name);
         this.constructor = Child;
 
         return this;
@@ -27,6 +28,7 @@ NerveObject.extend = function (proto) {
     _.assign(Child, Parent);
     util.inherits(Child, Parent);
     _.assign(Child.prototype, proto);
+    _.defaultsDeep(Child.prototype.defaultOptions, Parent.prototype.defaultOptions || {}, proto.defaultOptions || {});
     Child.super_ = Parent.prototype;
 
     return Child;
