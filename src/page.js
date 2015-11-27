@@ -161,6 +161,10 @@ Page = NerveModule.extend({
         return this.options.name;
     },
 
+    getTitle: function () {
+        return 'NerveJS Application';
+    },
+
     getScheme: function () {
         return this.options.request.protocol;
     },
@@ -240,7 +244,8 @@ Page = NerveModule.extend({
                 hosts: {
                     staticJs: this.getJsHost(),
                     staticCss: this.getCssHost()
-                }
+                },
+                pageTitle: this.getTitle()
             });
         }.bind(this));
     },
