@@ -223,7 +223,7 @@ Page = NerveModule.extend({
                         .then(userResolve)
                         .catch(userReject);
                 } else {
-                    userResolve()
+                    userResolve();
                 }
             }.bind(this))
                 .then(function () {

@@ -7,15 +7,19 @@ var path = require('path'),
 
 
 exports.init = function (app) {
-    fs.readdir(app.getCfg('localesDir'), function (err, files) {
-        files.forEach(function (locale) {
-            var filePath = path.resolve(app.getCfg('localesDir'), locale, app.getCfg('localesFileName'));
+    var localesDir = app.getCfg('localesDir');
 
-            fs.readFile(filePath, function (err, content) {
-                locales[locale] = gettextParser.po.parse(content.toString()).translations;
+    if (localesDir) {
+        fs.readdir(localesDir, function (err, files) {
+            files.forEach(function (locale) {
+                var filePath = path.resolve(app.getCfg('localesDir'), locale, app.getCfg('localesFileName'));
+
+                fs.readFile(filePath, function (err, content) {
+                    locales[locale] = gettextParser.po.parse(content.toString()).translations;
+                });
             });
         });
-    });
+    }
 };
 
 exports.getText = function (message, locale, ctx) {

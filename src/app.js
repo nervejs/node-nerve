@@ -86,20 +86,19 @@ NerveApp = NerveObject.extend({
 
     setCfg: function (key, value) {
         var arIds = key.split('.'),
-            cfgItem = this.config;
+            obj = {},
+            tmp = obj;
 
         arIds.forEach(function (item, index) {
-
-            if (!cfgItem[item]) {
-                cfgItem = {};
-            }
-
             if (index === arIds.length - 1) {
-                cfgItem[item] = value;
+                tmp[item] = value;
             } else {
-                cfgItem = cfgItem[item];
+                tmp[item] = {};
+                tmp = tmp[item];
             }
-        }.bind(this));
+        });
+
+        _.merge(this.config, obj);
 
         return this;
     },
@@ -113,7 +112,7 @@ NerveApp = NerveObject.extend({
             if (!_.isUndefined(cfgItem[arIds[iteration]])) {
                 cfgItem = cfgItem[arIds[iteration]];
             } else {
-                cfgItem = null;
+                cfgItem = undefined;
             }
 
             iteration++;

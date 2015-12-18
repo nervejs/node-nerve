@@ -90,7 +90,7 @@ Page = NerveObject.extend({
 
     getText: function (id) {
         var currentLocale = this.activeUser.get('locale'),
-            localesObject = this.constructor.locales[currentLocale],
+            localesObject = this.constructor.locales ? this.constructor.locales[currentLocale] : {},
             arIds = id.split('.'),
             iteration = 0,
             localesItem = localesObject;
