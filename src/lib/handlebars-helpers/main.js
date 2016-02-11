@@ -13,6 +13,7 @@ module.exports = function (Handlebars) {
         numberWidth = require('./number-width'),
         unlessEq = require('./unlessEq'),
         plural = require('./plural'),
+        random = require('./random'),
         spaceless = require('./spaceless'),
         times = require('./times');
 
@@ -28,6 +29,7 @@ module.exports = function (Handlebars) {
     numberWidth(Handlebars);
     unlessEq(Handlebars);
     plural(Handlebars);
+    random(Handlebars);
     spaceless(Handlebars);
     times(Handlebars);
 };

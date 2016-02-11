@@ -29,6 +29,7 @@ NerveApp = NerveObject.extend({
 
         this.isReady = false;
         this.routes = {};
+        this.publicRoutes = {};
         this.JS_VERSIONS = {};
         this.CSS_VERSIONS = {};
 
@@ -55,7 +56,17 @@ NerveApp = NerveObject.extend({
     },
 
     route: function (routes) {
-        this.routes = _.assign(this.routes, routes);
+        if (routes.public) {
+            this.routes = _.assign(this.routes, routes.public);
+            this.publicRoutes = _.assign(this.publicRoutes, routes.public);
+        }
+        if (routes.protected) {
+            this.routes = _.assign(this.routes, routes.protected);
+        }
+        if (!routes.public && !routes.protected) {
+            this.routes = _.assign(this.routes, routes);
+            this.publicRoutes = _.assign(this.publicRoutes, routes);
+        }
 
         Object.keys(this.routes).forEach(function (url) {
             this.router.get(url, this.routes[url]);
@@ -119,6 +130,19 @@ NerveApp = NerveObject.extend({
         }
 
         return cfgItem;
+    },
+
+    getPublicRoutes: function () {
+        var routes = [];
+
+        Object.keys(this.publicRoutes).forEach(function (item) {
+            routes.push({
+                key: item,
+                route: this.publicRoutes[item].replace(/^src\//, '')
+            });
+        }.bind(this));
+
+        return routes;
     },
 
     setDebugLevel: function (level) {

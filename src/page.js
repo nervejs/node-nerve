@@ -1,11 +1,12 @@
 'use strict';
 
 var _ = require('lodash'),
-    NerveModule = require('./module'),
-    path = require('path'),
-    ActiveUser = require('./active-user'),
     url = require('url'),
+    util = require('util'),
+    path = require('path'),
     debug = require('./lib/debug'),
+    NerveModule = require('./module'),
+    ActiveUser = require('./active-user'),
     Page;
 
 Page = NerveModule.extend({
@@ -196,7 +197,13 @@ Page = NerveModule.extend({
     },
 
     getCssUrl: function (cssName) {
-        return url.resolve(this.getCssHost(), this.getCssVersion(cssName) + '.css');
+        var cssUrl = url.resolve(this.getCssHost(), this.getCssVersion(cssName));
+
+        if (!/\.css$/.test(cssUrl)) {
+            cssUrl += '.css';
+        }
+
+        return cssUrl;
     },
 
     getJsUrl: function (jsName) {
@@ -247,7 +254,8 @@ Page = NerveModule.extend({
                     staticJs: this.getJsHost(),
                     staticCss: this.getCssHost()
                 },
-                pageTitle: this.getTitle()
+                pageTitle: this.getTitle(),
+                routes: this.app.getPublicRoutes()
             });
         }.bind(this));
     },
@@ -314,16 +322,32 @@ Page = NerveModule.extend({
     },
 
     errorHandler: function (err) {
-        debug.error(err.stack ? err + err.stack : err);
+        if (err.name && err.name === 'UpstreamResponseError') {
+            this.api.getRequests().forEach(function (request) {
+                if (request.getStatusCode() !== '200') {
+                    debug.error(util.format('%s: %s', err.name, request.getPath()));
+                }
+            });
+        } else {
+            debug.error(err.stack ? err + err.stack : err);
+        }
 
         this.options.response.status(err.statusCode || 500);
+        this.httpStatus = err.statusCode || 500;
+
         if (this.app.getCfg('isTestServer')) {
             this.send(err + '<br/>' + err.stack.replace(/\n/g, '<br/>'), 'text/html');
         } else {
             if (this.options.isShowErrorPage) {
                 this.renderErrorPage(err.statusCode || 500);
+            } else {
+                this.send('');
             }
         }
+    },
+
+    isShowErrorPage: function () {
+        return !!this.options.isShowErrorPage;
     },
 
     renderErrorPage: function (status) {
@@ -371,7 +395,10 @@ Page = NerveModule.extend({
 
         this.options.response.send(html);
 
-        this.emit('send');
+        this.emit('send', {
+            text: html,
+            status: this.httpStatus || 200
+        });
     }
 
 });

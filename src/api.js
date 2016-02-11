@@ -14,6 +14,7 @@
             this.app = page.app;
             this.options = _.assign({}, this.defaultOptions, options);
             this.response = null;
+            this.requests = [];
         },
 
         fetch: function () {
@@ -26,13 +27,40 @@
 
                 Promise.all(promises)
                     .then(function (responses) {
-                        this.response = this.adapter(responses);
+                        var result;
 
-                        resolve(this.response);
-                    }.bind(this), reject)
-                    .catch(function (err) {
-                        reject(err);
-                    });
+                        try {
+                            result = this.adapter(responses.map(function (item) {
+                                this.requests.push(item.request);
+
+                                return item.response;
+                            }.bind(this)));
+
+                            if (result instanceof Promise) {
+                                result
+                                    .then(function (adapted) {
+                                        this.response = adapted;
+                                        resolve(this.response);
+                                    }.bind(this))
+                                    .catch(function (err) {
+                                        reject({
+                                            error: err
+                                        });
+                                    });
+                            } else {
+                                this.response = result;
+                                resolve(this.response);
+                            }
+                        } catch (err) {
+                            reject({
+                                error: err
+                            });
+                        }
+                    }.bind(this))
+                    .catch(function (result) {
+                        this.requests.push(result.request);
+                        reject(result.error);
+                    }.bind(this));
             }.bind(this));
         },
 
@@ -52,6 +80,10 @@
 
         getResponse: function () {
             return this.response;
+        },
+
+        getRequests: function () {
+            return this.requests;
         }
 
     });
