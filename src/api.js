@@ -75,7 +75,15 @@
         },
 
         adapter: function (responses) {
-            return responses;
+            var result = {};
+
+            if (_.isArray(responses)) {
+                responses.forEach(function (item) {
+                    _.merge(result, item);
+                });
+            }
+
+            return result;
         },
 
         getResponse: function () {
