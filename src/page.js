@@ -234,11 +234,15 @@ Page = NerveModule.extend({
                 }
             }.bind(this))
                 .then(function () {
-                    this.api.fetch()
-                        .then(function (response) {
-                            resolve(response);
-                        })
-                        .catch(reject);
+                    if (this.api) {
+                        this.api.fetch()
+                            .then(function (response) {
+                                resolve(response);
+                            })
+                            .catch(reject);
+                    } else {
+                        resolve();
+                    }
                 }.bind(this));
         }.bind(this))];
     },
