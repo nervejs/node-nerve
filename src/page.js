@@ -264,16 +264,22 @@ Page = NerveModule.extend({
         }.bind(this));
     },
 
+    getLogPrefix: function () {
+        var user = this.activeUser && this.activeUser.get('email') ? this.activeUser.get('email') : 'unauthorized';
+
+        return util.format('%s: %s', this.getName(), user);
+    },
+
     log: function (message) {
-        debug.log(this.getName() + ': ' + message);
+        debug.log(util.format('%s: %s', this.getLogPrefix(), message));
     },
 
     time: function (message) {
-        debug.time(this.getName() + ': ' + message);
+        debug.time(util.format('%s: %s', this.getLogPrefix(), message));
     },
 
     timeEnd: function (message) {
-        debug.timeEnd(this.getName() + ': ' + message);
+        debug.timeEnd(util.format('%s: %s', this.getLogPrefix(), message));
     },
 
     getHtml: function (vars, contentTmpl) {
