@@ -327,6 +327,10 @@ Page = NerveModule.extend({
         }.bind(this));
     },
 
+    getUserAgent: function () {
+        return this.options.request && _.isFunction(this.options.request.get) ? this.options.request.get('User-Agent') : '';
+    },
+
     getContentType: function () {
         return 'text/html';
     },
