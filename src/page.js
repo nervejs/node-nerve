@@ -67,21 +67,17 @@ Page = NerveModule.extend({
                 this.tmpl = require(templatePath);
             }
 
-            if (this.templateError404) {
-                templateError404Path = path.resolve(this.frontEndDir, this.baseTmplPath, this.templateError404);
-                if (this.app.getCfg('isClearTemplateCache')) {
-                    delete require.cache[require.resolve(templateError404Path)];
-                }
-                this.tmplError404 = require(templateError404Path);
-            }
+            [403, 404, 500].forEach(function (errorCode) {
+                var templateErrorPath;
 
-            if (this.templateError500) {
-                templateError500Path = path.resolve(this.frontEndDir, this.baseTmplPath, this.templateError500);
-                if (this.app.getCfg('isClearTemplateCache')) {
-                    delete require.cache[require.resolve(templateError500Path)];
+                if (this['templateError' + errorCode]) {
+                    templateErrorPath = path.resolve(this.frontEndDir, this.baseTmplPath, this['templateError' + errorCode]);
+                    if (this.app.getCfg('isClearTemplateCache')) {
+                        delete require.cache[require.resolve(templateErrorPath)];
+                    }
+                    this['tmplError' + errorCode] = require(templateErrorPath);
                 }
-                this.tmplError500 = require(templateError500Path);
-            }
+            }.bind(this));
 
             this.initActiveUser();
 
@@ -349,7 +345,7 @@ Page = NerveModule.extend({
         this.options.response.status(err.statusCode || 500);
         this.httpStatus = err.statusCode || 500;
 
-        if (this.app.getCfg('isTestServer')) {
+        if (this.app.getCfg('isTestServer') && false) {
             this.send(err + '<br/>' + err.stack.replace(/\n/g, '<br/>'), 'text/html');
         } else {
             if (this.options.isShowErrorPage) {
