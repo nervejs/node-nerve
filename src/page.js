@@ -345,7 +345,7 @@ Page = NerveModule.extend({
         this.options.response.status(err.statusCode || 500);
         this.httpStatus = err.statusCode || 500;
 
-        if (this.app.getCfg('isTestServer') && false) {
+        if (this.app.getCfg('isTestServer')) {
             this.send(err + '<br/>' + err.stack.replace(/\n/g, '<br/>'), 'text/html');
         } else {
             if (this.options.isShowErrorPage) {
