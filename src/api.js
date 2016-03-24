@@ -92,6 +92,10 @@
 
         getRequests: function () {
             return this.requests;
+        },
+
+        getPage: function () {
+            return this.page;
         }
 
     });
