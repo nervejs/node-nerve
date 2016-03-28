@@ -378,7 +378,7 @@ Page = NerveModule.extend({
                                 }.bind(this));
                         }.bind(this))
                         .catch(function (err) {
-                            debug.error(err.toString());
+                            debug.error(err, err.stack);
                             this.send('');
                         }.bind(this));
                 }.bind(this))

@@ -51,8 +51,13 @@ NerveApp = NerveObject.extend({
         }.bind(this));
     },
 
-    listen: function (port, callback) {
-        return this.server.listen(port, callback);
+    listen: function (port, host, callback) {
+        this.connection = this.server.listen(port, host, callback);
+        return this.connection;
+    },
+
+    close: function () {
+        this.connection.close();
     },
 
     route: function (routes) {

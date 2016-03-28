@@ -1,7 +1,8 @@
 (function () {
     'use strict';
 
-    var NerveObject = require('./object'),
+    var _ = require('lodash'),
+        NerveObject = require('./object'),
         ActiveUser;
 
     ActiveUser = NerveObject.extend({
@@ -26,8 +27,21 @@
             return this.attr[key];
         },
 
-        set: function (key, value) {
+        setSingle: function (key, value) {
             this.attr[key] = value;
+        },
+
+        set: function (key, value) {
+            var attrs;
+
+            if (_.isObject(key)) {
+                attrs = key;
+                Object.keys(attrs).forEach(function (key) {
+                    this.setSingle(key, attrs[key]);
+                }.bind(this));
+            } else {
+                this.setSingle(key, value);
+            }
         },
 
         toJSON: function (key) {
