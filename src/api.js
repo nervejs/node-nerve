@@ -93,7 +93,7 @@
         },
 
         getResponseItemByIndex: function (index) {
-            var offset = Array.isArray(this.constructor.super_.dataSource) ? this.constructor.super_.dataSource.length + index - 1 : 0;
+            var offset = Array.isArray(this.constructor.super_.dataSource) ? this.constructor.super_.dataSource.length + index : 0;
 
             return this.responses[offset];
         },
