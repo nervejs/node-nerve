@@ -29,12 +29,14 @@
                     .then(function (responses) {
                         var result;
 
-                        try {
-                            result = this.adapter(responses.map(function (item) {
-                                this.requests.push(item.request);
+                        this.responses = responses.map(function (item) {
+                            this.requests.push(item.request);
 
-                                return item.response;
-                            }.bind(this)));
+                            return item.response;
+                        }.bind(this));
+
+                        try {
+                            result = this.adapter(this.responses);
 
                             if (result instanceof Promise) {
                                 result
@@ -88,6 +90,12 @@
 
         getResponse: function () {
             return this.response;
+        },
+
+        getResponseItemByIndex: function (index) {
+            var offset = Array.isArray(this.constructor.super_.dataSource) ? this.constructor.super_.dataSource.length + index - 1 : 0;
+
+            return this.responses[offset];
         },
 
         getRequests: function () {
