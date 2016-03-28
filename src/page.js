@@ -271,11 +271,11 @@ Page = NerveModule.extend({
     },
 
     time: function (message) {
-        debug.time(util.format('%s: %s', this.getLogPrefix(), message));
+        debug.time(this.options.request.id + message);
     },
 
     timeEnd: function (message) {
-        debug.timeEnd(util.format('%s: %s', this.getLogPrefix(), message));
+        debug.timeEnd(this.options.request.id + message, util.format('%s: %s', this.getLogPrefix(), message));
     },
 
     getHtml: function (vars, contentTmpl) {

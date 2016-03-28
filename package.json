@@ -1,6 +1,6 @@
 {
   "name": "node-nerve",
-  "version": "0.0.31",
+  "version": "0.0.32",
   "description": "node server for nervejs framework",
   "main": "src/app.js",
   "scripts": {

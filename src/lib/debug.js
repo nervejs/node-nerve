@@ -1,6 +1,12 @@
 'use strict';
 
+var util = require('util');
+
 module.exports = {
+
+    timeEvents: {},
+
+    timeout: 20000,
 
     setLevel: function (level) {
         this.level = level;
@@ -36,14 +42,30 @@ module.exports = {
         }
     },
 
-    time: function (message) {
-        console.time.apply(this, arguments);
+    time: function (id) {
+        if (this.level > 30) {
+            this.timeEvents[id] = Date.now();
+            setTimeout(function () {
+                if (this.timeEvents[id]) {
+                    delete this.timeEvents[id];
+                }
+            }.bind(this), this.timeout);
+        }
     },
 
-    timeEnd: function (message) {
+    timeEnd: function (id, message) {
+        var time;
+
+        message = message || id;
+
         try {
-            if (this.level > 30) {
-                console.timeEnd.apply(this, arguments);
+            if (this.level > 30 && this.timeEvents[id]) {
+                time = Date.now() - this.timeEvents[id];
+                delete this.timeEvents[id];
+
+                setTimeout(function () {
+                    console.log(util.format('%s: %sms', message, time));
+                });
             }
         } catch (ignore) {}
     }
