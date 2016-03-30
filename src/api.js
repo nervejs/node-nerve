@@ -20,7 +20,17 @@
         fetch: function () {
             return new Promise(function (resolve, reject) {
                 var promises = this.dataSource.map(function (item) {
-                    return this.request(item);
+                    var result;
+
+                    if (!_.isFunction(item.isEnable) || item.isEnable.call(this)) {
+                        result = this.request(item);
+                    } else {
+                        result = Promise.resolve({
+                            response: {}
+                        });
+                    }
+
+                    return result;
                 }.bind(this));
 
                 promises.push(this.getLocalesVars());
@@ -90,12 +100,6 @@
 
         getResponse: function () {
             return this.response;
-        },
-
-        getResponseItemByIndex: function (index) {
-            var offset = Array.isArray(this.constructor.super_.dataSource) ? this.constructor.super_.dataSource.length + index : index;
-
-            return this.responses[offset];
         },
 
         getRequests: function () {
