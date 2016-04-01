@@ -13,6 +13,7 @@ var _ = require('lodash'),
     handlebarsHelpers = require('./lib/handlebars-helpers/main'),
     debug = require('./lib/debug'),
     locales = require('./lib/locales'),
+    Property = require('./lib/property'),
     Handlebars = require('handlebars'),
     NerveApp;
 
@@ -101,40 +102,13 @@ NerveApp = NerveObject.extend({
     },
 
     setCfg: function (key, value) {
-        var arIds = key.split('.'),
-            obj = {},
-            tmp = obj;
-
-        arIds.forEach(function (item, index) {
-            if (index === arIds.length - 1) {
-                tmp[item] = value;
-            } else {
-                tmp[item] = {};
-                tmp = tmp[item];
-            }
-        });
-
-        _.merge(this.config, obj);
+        Property.set(this.config, key, value);
 
         return this;
     },
 
     getCfg: function (key) {
-        var arIds = key.split('.'),
-            iteration = 0,
-            cfgItem = this.config;
-
-        while (cfgItem && iteration < arIds.length) {
-            if (!_.isUndefined(cfgItem[arIds[iteration]])) {
-                cfgItem = cfgItem[arIds[iteration]];
-            } else {
-                cfgItem = undefined;
-            }
-
-            iteration++;
-        }
-
-        return cfgItem;
+        return Property.get(this.config, key);
     },
 
     getPublicRoutes: function () {

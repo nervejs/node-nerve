@@ -8,6 +8,8 @@ module.exports = function (Handlebars) {
             result = result
                 .replace(/</g, '&lt;')
                 .replace(/>/g, '&gt;');
+        } else {
+            result = '{}';
         }
 
         return result;
