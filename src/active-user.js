@@ -29,7 +29,9 @@
             return Promise.all(promises)
                 .then(function (results) {
                     results.forEach(function (item) {
-                        _.merge(this.attr, item);
+                        if (!item.error) {
+                            _.merge(this.attr, item);
+                        }
                     }.bind(this));
 
                     this.emit('fetched');
