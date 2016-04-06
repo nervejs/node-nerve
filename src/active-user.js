@@ -29,7 +29,7 @@
             return Promise.all(promises)
                 .then(function (results) {
                     results.forEach(function (item) {
-                        if (!item.error) {
+                        if (item && !item.error) {
                             _.merge(this.attr, item);
                         }
                     }.bind(this));
