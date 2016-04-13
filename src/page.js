@@ -113,7 +113,7 @@ Page = NerveModule.extend({
                                     }, responses[0], localesVars, vars);
                                     _.merge(vars.activeUser, this.activeUser.toJSON());
 
-                                    if (this.options.request.headers && this.options.request.headers.accept && this.options.request.headers.accept.indexOf('application/json') !== -1) {
+                                    if (this.isJsonAccept()) {
                                         this.send(JSON.stringify(vars));
                                     } else {
                                         this.getHtml(vars)
@@ -358,6 +358,10 @@ Page = NerveModule.extend({
 
     isShowErrorPage: function () {
         return !!this.options.isShowErrorPage;
+    },
+
+    isJsonAccept: function () {
+        return this.options.request.headers && this.options.request.headers.accept && this.options.request.headers.accept.indexOf('application/json') !== -1;
     },
 
     renderErrorPage: function (status) {
