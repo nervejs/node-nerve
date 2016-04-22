@@ -6,4 +6,10 @@ module.exports = function (Handlebars) {
             .replace(/^\{/, '')
             .replace(/\}$/, '') : '{}';
     });
+
+    Handlebars.registerHelper('stipEndBrace', function (object) {
+        return object ? JSON.stringify(object)
+            .replace(/^\{/, '')
+            .replace(/\}$/, '') : '{}';
+    });
 };
