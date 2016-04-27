@@ -5,6 +5,7 @@ var _ = require('lodash'),
     fs = require('fs'),
     uuid = require('node-uuid'),
     express = require('express'),
+    cookieParser = require('cookie-parser'),
     Router = require('./router'),
     Page = require('./page'),
     Api = require('./api'),
@@ -38,6 +39,7 @@ NerveApp = NerveObject.extend({
             req.id = uuid.v4();
             next();
         });
+        this.server.use(cookieParser());
 
         this.router = new Router(this);
 
