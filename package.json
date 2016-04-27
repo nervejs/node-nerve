@@ -1,6 +1,6 @@
 {
   "name": "node-nerve",
-  "version": "0.0.48",
+  "version": "0.0.49",
   "description": "node server for nervejs framework",
   "main": "src/app.js",
   "scripts": {
@@ -31,7 +31,7 @@
     "cookie-parser": "^1.4.1",
     "express": "4.13.3",
     "gettext-parser": "1.1.2",
-    "handlebars": "4.0.4",
+    "handlebars": "4.0.5",
     "lodash": "3.10.1",
     "node-uuid": "1.4.7",
     "request": "2.65.0"
