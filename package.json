@@ -1,6 +1,6 @@
 {
   "name": "node-nerve",
-  "version": "0.0.46",
+  "version": "0.0.47",
   "description": "node server for nervejs framework",
   "main": "src/app.js",
   "scripts": {
@@ -32,7 +32,7 @@
     "gettext-parser": "1.1.2",
     "handlebars": "4.0.4",
     "lodash": "3.10.1",
-    "node-uuid": "1.4.3",
+    "node-uuid": "1.4.7",
     "request": "2.65.0"
   }
 }
