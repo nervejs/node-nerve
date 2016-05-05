@@ -260,6 +260,10 @@ Page = NerveModule.extend({
         }.bind(this));
     },
 
+    getErrorTemplateVars: function () {
+        return Page.prototype.getTemplateVars.call(this);
+    },
+
     getLogPrefix: function () {
         var user = this.activeUser && this.activeUser.get('email') ? this.activeUser.get('email') : 'unauthorized';
 
@@ -372,7 +376,7 @@ Page = NerveModule.extend({
         if (this['tmplError' + status]) {
             this.getLocalesVars()
                 .then(function (localesVars) {
-                    this.getTemplateVars()
+                    this.getErrorTemplateVars()
                         .then(function (vars) {
                             this.getHtml(_.assign({}, vars, localesVars, {
                                 activeUser: this.activeUser.toJSON(),
