@@ -115,7 +115,7 @@
     Api.getResponseItemByIndex = function (api, index) {
         var offset = Array.isArray(this.super_.dataSource) ? this.super_.dataSource.length + index : index;
 
-        return api.responses[offset];
+        return api.responses ? api.responses[offset] : {};
     };
 
     module.exports = Api;
