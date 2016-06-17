@@ -9,6 +9,8 @@
 
     Api = NerveModule.extend({
 
+        dataSource: [],
+
         init: function (page, options) {
             this.page = page;
             this.app = page.app;
