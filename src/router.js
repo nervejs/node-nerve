@@ -29,6 +29,11 @@ Router = NerveObject.extend({
                 response: response
             });
         }.bind(this));
+    },
+
+    go: function (url, request, response) {
+        request.url = url;
+        this.app.server.handle(request, response);
     }
 
 });

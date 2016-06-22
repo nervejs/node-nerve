@@ -93,8 +93,8 @@ Page = NerveModule.extend({
                 this.log('API IS EMPTY');
             }
 
-            Promise.all(this.getResponsePromises())
-                .then(function (responses) {
+            this.getResponsePromises()
+                .then(function (response) {
                     this.startProcessingTime = Date.now();
                     this.timeEnd('GET API RESPONSE');
                     this.time('PAGE PROCESSING');
@@ -110,7 +110,7 @@ Page = NerveModule.extend({
 
                                     vars = _.assign({
                                         activeUser: {}
-                                    }, responses[0], localesVars, vars);
+                                    }, response, localesVars, vars);
                                     _.merge(vars.activeUser, this.activeUser.toJSON());
 
                                     if (this.isJsonAccept()) {
@@ -219,7 +219,7 @@ Page = NerveModule.extend({
     },
 
     getResponsePromises: function () {
-        return [new Promise(function (resolve, reject) {
+        return new Promise(function (resolve, reject) {
             new Promise(function (userResolve, userReject) {
                 if (this.options.isNeedActiveUser) {
                     this.activeUser.request()
@@ -230,17 +230,28 @@ Page = NerveModule.extend({
                 }
             }.bind(this))
                 .then(function () {
-                    if (this.api) {
-                        this.api.fetch()
-                            .then(function (response) {
-                                resolve(response);
-                            })
+                    var resultBeforeFilter = this.beforeFilter() || {};
+
+                    if (resultBeforeFilter instanceof Promise) {
+                        resultBeforeFilter
+                            .then(function (result) {
+                                if (!result.isAbort) {
+                                    this.fetchApi()
+                                        .then(resolve)
+                                        .catch(reject);
+                                }
+                            }.bind(this))
                             .catch(reject);
                     } else {
-                        resolve();
+                        if (!resultBeforeFilter.isAbort) {
+                            this.fetchApi()
+                                .then(resolve)
+                                .catch(reject);
+                        }
                     }
-                }.bind(this));
-        }.bind(this))];
+                }.bind(this))
+                .catch(reject);
+        }.bind(this));
     },
 
     getTemplateVars: function () {
@@ -268,6 +279,24 @@ Page = NerveModule.extend({
         var user = this.activeUser && this.activeUser.get('email') ? this.activeUser.get('email') : 'unauthorized';
 
         return util.format('%s: %s', this.getName(), user);
+    },
+
+    fetchApi: function () {
+        return new Promise(function (resolve, reject) {
+            if (this.api) {
+                this.api.fetch()
+                    .then(function (response) {
+                        resolve(response);
+                    })
+                    .catch(reject);
+            } else {
+                resolve();
+            }
+        }.bind(this));
+    },
+
+    beforeFilter: function () {
+        return null;
     },
 
     log: function (message) {
@@ -403,7 +432,24 @@ Page = NerveModule.extend({
         }
     },
 
-    send: function (html, contentType) {
+    redirect: function (location, status) {
+        this.httpStatus = status || 301;
+
+        this.options.response.header({
+            location: location
+        });
+        this.send();
+    },
+
+    rewrite: function (url) {
+        this.app.router.go(url, this.options.request, this.options.response);
+    },
+
+    send: function (content, contentType) {
+        content = content || '';
+
+        this.options.response.status(this.httpStatus || 200);
+
         this.options.response.header({
             'Cache-Control': 'no-cache, no-store',
             'Content-type': (contentType || this.getContentType()) + '; charset=utf-8'
@@ -415,10 +461,10 @@ Page = NerveModule.extend({
         this.processingTime = Date.now() - this.startProcessingTime;
         this.fullTime = Date.now() - this.startTime;
 
-        this.options.response.send(html);
+        this.options.response.send(content);
 
         this.emit('send', {
-            text: html,
+            text: content,
             status: this.httpStatus || 200
         });
     }
