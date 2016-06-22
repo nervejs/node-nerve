@@ -258,6 +258,8 @@ Page = NerveModule.extend({
         return new Promise(function (resolve) {
             resolve({
                 request: {
+                    url: this.options.request.url,
+                    path: this.options.request.path,
                     get: this.options.request.query
                 },
                 css: this.getCss(),
@@ -433,12 +435,21 @@ Page = NerveModule.extend({
     },
 
     redirect: function (location, status) {
-        this.httpStatus = status || 301;
+        if (this.isJsonAccept()) {
+            this.httpStatus = 200;
 
-        this.options.response.header({
-            location: location
-        });
-        this.send();
+            this.send(JSON.stringify({
+                isRedirect: true,
+                location: location
+            }));
+        } else {
+           this.httpStatus = status || 301;
+
+            this.options.response.header({
+                location: location
+            });
+            this.send();
+        }
     },
 
     rewrite: function (url) {
