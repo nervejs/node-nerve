@@ -457,7 +457,7 @@ Page = NerveModule.extend({
     },
 
     send: function (content, contentType) {
-        content = content || '';
+        content = String(content || '');
 
         this.options.response.status(this.httpStatus || 200);
 
