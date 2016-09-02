@@ -367,7 +367,7 @@ Page = NerveModule.extend({
     },
 
     getContentType: function () {
-        return 'text/html';
+        return this.isJsonAccept() ? 'application/json' : 'text/html';
     },
 
     errorHandler: function (err) {
