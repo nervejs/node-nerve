@@ -34,6 +34,7 @@ NerveApp = NerveObject.extend({
         this.publicRoutes = {};
         this.JS_VERSIONS = {};
         this.CSS_VERSIONS = {};
+        this.SPRITE_VERSIONS = {};
 
         this.server.use(function (req, res, next) {
             req.id = uuid.v4();

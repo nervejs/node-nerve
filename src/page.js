@@ -214,6 +214,10 @@ Page = NerveModule.extend({
         return jsUrl;
     },
 
+    getSprite: function (sprite) {
+        return this.app.SPRITE_VERSIONS[sprite];
+    },
+
     getCss: function () {
         return [];
     },
