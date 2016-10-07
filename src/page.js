@@ -363,7 +363,7 @@ Page = NerveModule.extend({
     },
 
     getUserAgent: function () {
-        return this.options.request && _.isFunction(this.options.request.get) ? this.options.request.get('User-Agent') : '';
+        return this.options.request && _.isFunction(this.options.request.get) ? this.options.request.get('User-Agent') || '' : '';
     },
 
     getReferrer: function () {
