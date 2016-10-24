@@ -4,11 +4,11 @@ module.exports = function (Handlebars) {
     Handlebars.registerHelper('htmlEntityEncode', function (str) {
         return String(str)
             .replace(/&/g, '&amp;')
+            .replace(/#/g, '&#35;')
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#39;')
             .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/#/g, '&#35;');
+            .replace(/>/g, '&gt;');
     });
 
     Handlebars.registerHelper('htmlEntityDecode', function (str) {
