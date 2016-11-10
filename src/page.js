@@ -268,6 +268,7 @@ Page = NerveModule.extend({
                 },
                 css: this.getCss(),
                 hosts: {
+                    static: this.getStaticHost(),
                     staticJs: this.getJsHost(),
                     staticCss: this.getCssHost()
                 },
