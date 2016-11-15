@@ -285,7 +285,7 @@ Page = NerveModule.extend({
     getLogPrefix: function () {
         var user = this.activeUser && this.activeUser.get('email') ? this.activeUser.get('email') : 'unauthorized';
 
-        return util.format('%s: %s', this.getName(), user);
+        return util.format('%s: %s: %s', (new Date()).toString(), this.getName(), user);
     },
 
     fetchApi: function () {
