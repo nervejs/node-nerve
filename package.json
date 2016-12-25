@@ -24,7 +24,8 @@
   "homepage": "https://github.com/nervejs/node-nerve#readme",
   "devDependencies": {
     "grunt": "^0.4.5",
-    "grunt-jslint": "^1.1.14"
+    "grunt-eslint": "^19.0.0",
+    "grunt-jscs": "^3.0.1"
   },
   "dependencies": {
     "commander": "2.9.0",

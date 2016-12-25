@@ -50,6 +50,10 @@ NerveApp = NerveObject.extend({
             debug.setLevel(this.getCfg('logLevel'));
             locales.init(this);
 
+            if (this.getCfg('localStatic')) {
+                this.server.use(express.static(this.getCfg('localStatic')));
+            }
+
             this.isReady = true;
             this.emit('ready');
         }.bind(this));
@@ -84,24 +88,26 @@ NerveApp = NerveObject.extend({
 
     env: function (env) {
         this.environment = env;
+
+        if (this.allConfig) {
+            this.config = this.allConfig[this.environment];
+        }
     },
 
     readCfg: function () {
         return new Promise(function (resolve, reject) {
             fs.readFile('./nerve.json', function (err, content) {
-                var config;
-
                 if (err) {
                     reject(err);
                     throw err;
                 }
 
-                config = JSON.parse(content.toString());
-                this.config = config[this.environment];
+                this.allConfig = JSON.parse(content.toString());
+                this.config = this.allConfig[this.environment];
 
                 resolve(this.config);
             }.bind(this));
-        });
+        }.bind(this));
     },
 
     setCfg: function (key, value) {
@@ -129,6 +135,15 @@ NerveApp = NerveObject.extend({
 
     setDebugLevel: function (level) {
         debug.setLevel(level);
+    },
+
+    /**
+     * Установка индекса воркера
+     *
+     * @param {Number} index индекс воркера
+     */
+    setWorkerIndex: function (index) {
+        this.workerIndex = index;
     },
 
     ready: function () {

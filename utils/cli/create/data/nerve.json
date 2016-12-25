@@ -1,0 +1,19 @@
+{
+	"dev": {
+		"isTestServer": true,
+		"logLevel": 50,
+		"isClearTemplateCache": true,
+		"frontendDir": "templates",
+		"localStatic": "dist",
+		"cssHost": "127.0.0.1:3000/css"
+	},
+
+	"prod": {
+		"isTestServer": false,
+		"logLevel": 50,
+		"isClearTemplateCache": false,
+		"frontendDir": "dist/templates",
+		"localStatic": "dist",
+		"cssHost": "127.0.0.1:3000/css"
+	}
+}

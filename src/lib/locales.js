@@ -5,7 +5,6 @@ var path = require('path'),
     gettextParser = require('gettext-parser'),
     locales = {};
 
-
 exports.init = function (app) {
     var localesDir = app.getCfg('localesDir');
 

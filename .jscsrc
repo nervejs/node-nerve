@@ -1,0 +1,33 @@
+{
+	"preset": "google",
+	"maximumLineLength": false,
+	"requireLineFeedAtFileEnd": false,
+	"disallowSpacesInFunctionExpression": false,
+	"disallowSpacesInAnonymousFunctionExpression": false,
+	"disallowMultipleVarDecl": false,
+	"validateIndentation": {
+		"value": 4
+	},
+	"jsDoc": {
+		"checkAnnotations": "jsdoc3"
+	},
+	"requireCamelCaseOrUpperCaseIdentifiers": {
+		"ignoreProperties": true
+	},
+	"requireOperatorBeforeLineBreak": [
+		"?",
+		"=",
+		"+",
+		"-",
+		"/",
+		"*",
+		"==",
+		"===",
+		"!=",
+		"!==",
+		">",
+		">=",
+		"<",
+		"<="
+	]
+}

@@ -8,6 +8,10 @@
 
     ActiveUser = NerveObject.extend({
 
+        defaultOptions: {
+            fields: {}
+        },
+
         init: function (app, options) {
             this.app = app;
             this.options = _.merge({}, this.defaultOptions, options);
@@ -23,8 +27,8 @@
          */
         request: function () {
             var promises = Object.keys(this.options.fields).map(function (field) {
-                    return this.options.fields[field] && _.isFunction(this[field]) ? this[field]() : Promise.resolve();
-                }.bind(this));
+                return this.options.fields[field] && _.isFunction(this[field]) ? this[field]() : Promise.resolve();
+            }.bind(this));
 
             return Promise.all(promises)
                 .then(function (results) {
@@ -35,7 +39,7 @@
                     }.bind(this));
 
                     this.emit('fetched');
-                }.bind(this))
+                }.bind(this));
         },
 
         get: function (key) {

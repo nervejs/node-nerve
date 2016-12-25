@@ -31,9 +31,7 @@ Page = NerveModule.extend({
     init: function (app, options) {
         var templateHeadPath,
             templateFooterPath,
-            templatePath,
-            templateError404Path,
-            templateError500Path;
+            templatePath;
 
         try {
             Page.super_.init.apply(this, arguments);
@@ -45,26 +43,17 @@ Page = NerveModule.extend({
 
             if (this.templateHead) {
                 templateHeadPath = path.resolve(this.frontEndDir, this.baseTmplPath, this.templateHead);
-                if (this.app.getCfg('isClearTemplateCache')) {
-                    delete require.cache[require.resolve(templateHeadPath)];
-                }
-                this.tmplHead = require(templateHeadPath);
+                this.tmplHead = this.getTemplate(templateHeadPath);
             }
 
             if (this.templateFooter) {
                 templateFooterPath = path.resolve(this.frontEndDir, this.baseTmplPath, this.templateFooter);
-                if (this.app.getCfg('isClearTemplateCache')) {
-                    delete require.cache[require.resolve(templateFooterPath)];
-                }
-                this.tmplFooter = require(templateFooterPath);
+                this.tmplFooter = this.getTemplate(templateFooterPath);
             }
 
             if (this.template) {
                 templatePath = path.resolve(this.frontEndDir, this.pagesTmplPath, this.template);
-                if (this.app.getCfg('isClearTemplateCache')) {
-                    delete require.cache[require.resolve(templatePath)];
-                }
-                this.tmpl = require(templatePath);
+                this.tmpl = this.getTemplate(templatePath);
             }
 
             [403, 404, 500].forEach(function (errorCode) {
@@ -72,10 +61,7 @@ Page = NerveModule.extend({
 
                 if (this['templateError' + errorCode]) {
                     templateErrorPath = path.resolve(this.frontEndDir, this.baseTmplPath, this['templateError' + errorCode]);
-                    if (this.app.getCfg('isClearTemplateCache')) {
-                        delete require.cache[require.resolve(templateErrorPath)];
-                    }
-                    this['tmplError' + errorCode] = require(templateErrorPath);
+                    this['tmplError' + errorCode] = this.getTemplate(templateErrorPath);
                 }
             }.bind(this));
 
@@ -139,6 +125,17 @@ Page = NerveModule.extend({
         } catch (err) {
             this.errorHandler(err);
         }
+    },
+
+    getTemplate: function (templatePath) {
+        var tmpl;
+
+        if (this.app.getCfg('isClearTemplateCache')) {
+            delete require.cache[require.resolve(templatePath)];
+        }
+        tmpl = require(templatePath);
+
+        return tmpl;
     },
 
     initActiveUser: function () {
@@ -368,7 +365,7 @@ Page = NerveModule.extend({
     },
 
     getReferrer: function () {
-        return this.options.request.headers['referer'];
+        return this.options.request.headers.referer;
     },
 
     getContentType: function () {
@@ -448,7 +445,7 @@ Page = NerveModule.extend({
                 location: location
             }));
         } else {
-           this.httpStatus = status || 301;
+            this.httpStatus = status || 301;
 
             this.options.response.header({
                 location: location

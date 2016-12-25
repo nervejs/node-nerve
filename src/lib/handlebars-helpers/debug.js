@@ -1,4 +1,4 @@
-/*global console*/
+/*eslint no-console: "off"*/
 
 module.exports = function (Handlebars) {
     'use strict';
