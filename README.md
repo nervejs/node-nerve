@@ -35,5 +35,5 @@ In production mode the application uses the compiled templates and does not clea
 
 Compile templates:
 ```bash
-$ npm templates
+$ npm run templates
 ```
