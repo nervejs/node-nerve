@@ -37,8 +37,8 @@ function setScripts() {
 
                 pkg.scripts = {
                     app: './bin/run',
-                    build: 'grunt',
-                    templates: 'grunt nerve-handlebars'
+                    build: './node_modules/grunt-cli/bin/grunt',
+                    templates: './node_modules/grunt-cli/bin/grunt nerve-handlebars'
                 };
 
                 fs.writeFile(pkgPath, JSON.stringify(pkg, ' ', 2), (err) => {
@@ -116,7 +116,7 @@ module.exports = function () {
                         npmInstall('grunt-nerve-handlebars', '0.0.6', '--save-dev'),
                     ])
                         .then(() => {
-                            let child = spawn('grunt', {
+                            let child = spawn('./node_modules/grunt-cli/bin/grunt', {
                                 cwd: path.resolve(cwd)
                             });
 
