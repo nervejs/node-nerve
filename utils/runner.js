@@ -12,11 +12,11 @@ module.exports = function (projectOptions) {
         workerFailed,
         server,
         worker,
-        pathToApp;
+        pathToProject;
 
     projectOptions = projectOptions || {};
     port = projectOptions.port || 3000;
-    pathToApp = projectOptions.pathToApp || 'src/app';
+    pathToProject = projectOptions.pathToProject || 'src';
 
     options = require('commander')
         .option('-s, --socket [<host>]:<port>', 'socket to listen on')
@@ -98,7 +98,7 @@ module.exports = function (projectOptions) {
             process.exit(0);
         });
     } else {
-        app = require(path.resolve(process.cwd(), pathToApp)).app;
+        app = require(path.resolve(process.cwd(), pathToProject, 'app')).app;
 
         if (options.env) {
             app.env(options.env);
@@ -111,7 +111,7 @@ module.exports = function (projectOptions) {
             console.log('Listening on ' + bind);
         });
 
-        app.route(require(path.resolve(process.cwd(), 'src/routes')));
+        app.route(require(path.resolve(process.cwd(), pathToProject, 'routes')));
 
         server.on('error', function (error) {
             if (error.syscall !== 'listen')
