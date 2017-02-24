@@ -11,10 +11,12 @@ module.exports = function (projectOptions) {
         workersNum,
         workerFailed,
         server,
-        worker;
+        worker,
+        pathToApp;
 
     projectOptions = projectOptions || {};
     port = projectOptions.port || 3000;
+    pathToApp = projectOptions.pathToApp || 'src/app';
 
     options = require('commander')
         .option('-s, --socket [<host>]:<port>', 'socket to listen on')
@@ -96,7 +98,7 @@ module.exports = function (projectOptions) {
             process.exit(0);
         });
     } else {
-        app = require(path.resolve(process.cwd(), 'src/app')).app;
+        app = require(path.resolve(process.cwd(), pathToApp)).app;
 
         if (options.env) {
             app.env(options.env);
