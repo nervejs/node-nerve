@@ -5,31 +5,40 @@ var programm = require('commander'),
     fs = require('fs'),
     create = require('./cli/create/index');
 
-function NerveCli(options) {
-    var pkg = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../package.json')).toString());
+class NerveCli {
 
-    this.options = options || {};
+    constructor(options) {
+        let pkg = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../package.json')).toString());
 
-    programm.version(pkg.version);
+        this.options = options || {};
 
-    programm
-        .command('create [entity] [name]')
-        .action(function(entity, name){
-            if (entity) {
-                create.command(entity, name);
-            } else {
+        programm.version(pkg.version);
+
+        programm
+            .option('-n, --node')
+            .command('create [entity] [name]')
+            .action(function (entity, name) {
+                if (entity) {
+                    create.command(entity, name);
+                } else {
+                    create.help();
+                }
+            })
+            .on('--help', function () {
                 create.help();
-            }
-        })
-        .on('--help', function() {
-            create.help();
-        });
+            });
 
-    programm.parse(process.argv);
+        programm.parse(process.argv);
 
-    if (!process.argv.slice(2).length) {
-        programm.outputHelp();
+        if (!process.argv.slice(2).length) {
+            programm.outputHelp();
+        }
     }
+
+    createApp() {
+        create.command('app');
+    }
+
 }
 
 module.exports = NerveCli;
