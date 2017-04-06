@@ -1,6 +1,6 @@
 'use strict';
 
-const _ = requuire('lodash');
+const _ = require('lodash');
 
 module.exports = {
 
