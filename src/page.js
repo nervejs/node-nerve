@@ -388,7 +388,7 @@ Page = NerveModule.extend({
             this.api.getRequests().forEach((request) => {
                 if (request.getStatusCode() !== '200') {
                     statusCode = request.getStatusCode();
-                    this.errorLog(`${err.name} ${request.getStatusCode()} ${request.getUpstream()} ${request.getMethod()} ${request.getPath()}`);
+                    this.errorLog(`${err.name} ${request.getStatusCode()} ${request.getUpstream()} (${request.getHostname()}:${request.getPort()}) ${request.getMethod()} ${request.getPath()}`);
                 }
             });
         } else {
