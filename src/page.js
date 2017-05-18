@@ -38,6 +38,7 @@ Page = NerveModule.extend({
 
             this.startTime = Date.now();
             this.time('FULL PAGE TIME');
+            this.log(`${this.options.request.method} ${this.options.request.url}`);
 
             this.frontEndDir = this.getFrontendDir();
 
@@ -76,7 +77,7 @@ Page = NerveModule.extend({
                 });
                 this.api.setActiveUser(this.activeUser);
             } else {
-                this.log('API IS EMPTY');
+                this.debug('API IS EMPTY');
             }
 
             this.getResponsePromises()
@@ -303,8 +304,16 @@ Page = NerveModule.extend({
         return null;
     },
 
+    errorLog: function (message) {
+        debug.error(util.format('%s: %s', this.getLogPrefix(), message));
+    },
+
     log: function (message) {
         debug.log(util.format('%s: %s', this.getLogPrefix(), message));
+    },
+
+    debug: function (message) {
+        debug.debug(util.format('%s: %s', this.getLogPrefix(), message));
     },
 
     time: function (message) {
@@ -338,7 +347,7 @@ Page = NerveModule.extend({
                         content = tmpl(vars);
                         this.timeEnd('RENDER CONTENT');
                     } else {
-                        this.log('EMPTY CONTENT TEMPLATE');
+                        this.debug('EMPTY CONTENT TEMPLATE');
                         content = '';
                     }
                     resolve(content);
@@ -373,28 +382,35 @@ Page = NerveModule.extend({
     },
 
     errorHandler: function (err) {
+        let statusCode = err.statusCode || 500;
+
         if (err.name && err.name === 'UpstreamResponseError') {
-            this.api.getRequests().forEach(function (request) {
+            this.api.getRequests().forEach((request) => {
                 if (request.getStatusCode() !== '200') {
-                    debug.error(util.format('%s: %s', err.name, request.getPath()));
+                    statusCode = request.getStatusCode();
+                    this.errorLog(`${err.name} ${request.getStatusCode()} ${request.getUpstream()} ${request.getMethod()} ${request.getPath()}`);
                 }
             });
         } else {
             debug.error(err.stack ? err + err.stack : err);
         }
 
-        this.options.response.status(err.statusCode || 500);
-        this.httpStatus = err.statusCode || 500;
+        this.options.response.status(statusCode);
+        this.httpStatus = statusCode;
 
         if (this.app.getCfg('isTestServer')) {
             this.send(err + '<br/>' + err.stack.replace(/\n/g, '<br/>'), 'text/html');
         } else {
             if (this.options.isShowErrorPage) {
-                this.renderErrorPage(err.statusCode || 500);
+                this.renderErrorPage(statusCode);
             } else {
                 this.send('');
             }
         }
+
+        this.errorLog(`Error ${this.httpStatus} ${this.options.request.method} ${this.options.request.url}`);
+
+        return this;
     },
 
     isShowErrorPage: function () {

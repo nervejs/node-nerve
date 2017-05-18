@@ -2,7 +2,7 @@
 
 'use strict';
 
-var util = require('util');
+const util = require('util');
 
 module.exports = {
 
@@ -14,18 +14,8 @@ module.exports = {
         this.level = level;
     },
 
-    log: function (message) {
-        var args = arguments;
-
-        if (this.level > 10) {
-            setTimeout(function () {
-                console.log.apply(this, args);
-            });
-        }
-    },
-
     error: function (message) {
-        var args = arguments;
+        let args = arguments;
 
         if (this.level > 0) {
             setTimeout(function () {
@@ -34,8 +24,18 @@ module.exports = {
         }
     },
 
+    log: function (message) {
+        let args = arguments;
+
+        if (this.level > 10) {
+            setTimeout(function () {
+                console.log.apply(this, args);
+            });
+        }
+    },
+
     debug: function (message) {
-        var args = arguments;
+        let args = arguments;
 
         if (this.level > 20) {
             setTimeout(function () {
@@ -56,7 +56,7 @@ module.exports = {
     },
 
     timeEnd: function (id, message) {
-        var time;
+        let time;
 
         message = message || id;
 
