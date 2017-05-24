@@ -24,6 +24,7 @@ Page = NerveModule.extend({
     defaultOptions: {
         isNeedActiveUser: true,
         isShowErrorPage: true,
+        isForceShowErrorPage: false,
         type: null,
         name: null
     },
@@ -398,13 +399,34 @@ Page = NerveModule.extend({
         this.options.response.status(statusCode);
         this.httpStatus = statusCode;
 
-        if (this.app.getCfg('isTestServer')) {
-            this.send(err + '<br/>' + err.stack.replace(/\n/g, '<br/>'), 'text/html');
+        if (this.isJsonAccept()) {
+            this.getLocalesVars()
+                .then((localesVars) => {
+                    this.getErrorTemplateVars()
+                        .then((vars) => {
+                            this.send(JSON.stringify(_.assign({}, vars, localesVars, {
+                                activeUser: this.activeUser.toJSON(),
+                                statusCode: statusCode
+                            })), null, 200);
+                        })
+                        .catch((err) => {
+                            this.errorLog(err);
+                            this.send('');
+                        });
+                })
+                .catch((err) => {
+                    this.errorLog(err);
+                    this.send('');
+                });
         } else {
-            if (this.options.isShowErrorPage) {
-                this.renderErrorPage(statusCode);
+            if (this.app.getCfg('isTestServer') && !this.isForceShowErrorPage()) {
+                this.send(err + '<br/>' + err.stack.replace(/\n/g, '<br/>'), 'text/html');
             } else {
-                this.send('');
+                if (this.options.isShowErrorPage) {
+                    this.renderErrorPage(statusCode);
+                } else {
+                    this.send('');
+                }
             }
         }
 
@@ -415,6 +437,10 @@ Page = NerveModule.extend({
 
     isShowErrorPage: function () {
         return !!this.options.isShowErrorPage;
+    },
+
+    isForceShowErrorPage: function () {
+        return !!this.options.isForceShowErrorPage;
     },
 
     isJsonAccept: function () {
@@ -474,10 +500,10 @@ Page = NerveModule.extend({
         this.app.router.go(url, this.options.request, this.options.response);
     },
 
-    send: function (content, contentType) {
+    send: function (content, contentType, status) {
         content = String(content || '');
 
-        this.options.response.status(this.httpStatus || 200);
+        this.options.response.status(status || this.httpStatus || 200);
 
         this.options.response.header({
             'Cache-Control': 'no-cache, no-store',
