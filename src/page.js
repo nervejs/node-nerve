@@ -101,17 +101,7 @@ Page = NerveModule.extend({
                                     }, response, localesVars, vars);
                                     _.merge(vars.activeUser, this.activeUser.toJSON());
 
-                                    if (this.isJsonAccept()) {
-                                        this.send(JSON.stringify(vars));
-                                    } else {
-                                        this.getHtml(vars)
-                                            .then(function (html) {
-                                                this.send(html);
-                                            }.bind(this))
-                                            .catch(function (err) {
-                                                this.errorHandler(err);
-                                            }.bind(this));
-                                    }
+                                    this.sendResponse(vars)
                                 }.bind(this))
                                 .catch(function (err) {
                                     this.errorHandler(err);
@@ -498,6 +488,20 @@ Page = NerveModule.extend({
 
     rewrite: function (url) {
         this.app.router.go(url, this.options.request, this.options.response);
+    },
+
+    sendResponse: function (vars) {
+        if (this.isJsonAccept()) {
+            this.send(JSON.stringify(vars));
+        } else {
+            this.getHtml(vars)
+                .then(function (html) {
+                    this.send(html);
+                }.bind(this))
+                .catch(function (err) {
+                    this.errorHandler(err);
+                }.bind(this));
+        }
     },
 
     send: function (content, contentType, status) {
