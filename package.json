@@ -1,6 +1,6 @@
 {
   "name": "node-nerve",
-  "version": "0.0.78",
+  "version": "0.0.79",
   "description": "node server for nervejs framework",
   "main": "src/app.js",
   "scripts": {
@@ -28,6 +28,7 @@
     "grunt-jscs": "^3.0.1"
   },
   "dependencies": {
+    "browser-detect": "^0.2.18",
     "commander": "2.9.0",
     "cookie-parser": "^1.4.1",
     "express": "4.14.0",

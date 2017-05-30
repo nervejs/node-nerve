@@ -1,6 +1,7 @@
 'use strict';
 
 const _ = require('lodash');
+const browser = require('browser-detect');
 
 module.exports = {
 
@@ -241,6 +242,18 @@ module.exports = {
          */
         isMobile: function (userAgent) {
             return this.isWindowsPhone(userAgent) || this.isAndroid(userAgent) || this.isIOs(userAgent);
+        }
+
+    },
+
+    browser: {
+
+        getName: function (userAgent) {
+            return browser(userAgent).name;
+        },
+
+        getVersion: function (userAgent) {
+            return browser(userAgent).version;
         }
 
     }
