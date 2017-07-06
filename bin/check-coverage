@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+MIN_COVERAGE_PERCENT=18;
+
+rm -rf coverage;
+
+COVERAGE_RESULT=$(./node_modules/.bin/nyc --reporter=text-summary ./node_modules/.bin/mocha ./tests/**/*.js | grep Statements | awk '{gsub("%", "", $3); printf("%3i", $3)}');
+
+if [ $COVERAGE_RESULT -lt $MIN_COVERAGE_PERCENT ]; then
+	echo "BAD COVERAGE RESULT: $COVERAGE_RESULT% (min $MIN_COVERAGE_PERCENT%)";
+	exit 1;
+else
+	echo "COVERAGE RESULT: OK - $COVERAGE_RESULT%";
+	exit 0;
+fi

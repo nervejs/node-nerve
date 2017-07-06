@@ -20,6 +20,7 @@ module.exports = function (projectOptions) {
 
     options = require('commander')
         .option('-s, --socket [<host>]:<port>', 'socket to listen on')
+        .option('-p, --port <port>', 'port to listen on')
         .option('-w, --workers <n>', 'number of workers to start (default: Ncpu - 1)')
         .option('-r, --routes <file>', 'template routes file')
         .option('-t, --templates <dir>', 'templates directory')
@@ -35,6 +36,10 @@ module.exports = function (projectOptions) {
 
         host = socket[1];
         port = socket[2];
+    }
+
+    if (options.port) {
+        port = options.port;
     }
 
     if (cluster.isMaster) {
