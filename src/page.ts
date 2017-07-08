@@ -191,15 +191,15 @@ class NervePage extends NerveModule {
     }
 
     getStaticHost(): string {
-        return '//' + this.app.getCfg('staticHost');
+        return '//' + this.app.getCfg('hosts.static');
     }
 
     getJsHost(): string {
-        return '//' + this.app.getCfg('jsHost');
+        return '//' + this.app.getCfg('hosts.js');
     }
 
     getCssHost(): string {
-        return '//' + this.app.getCfg('cssHost');
+        return '//' + this.app.getCfg('hosts.css');
     }
 
     getCssVersion(cssName: string): string {
