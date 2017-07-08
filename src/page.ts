@@ -21,6 +21,7 @@ class NervePage extends NerveModule {
     protected templateFooter: string = '';
 
     protected templateError404: string = '';
+    protected templateError403: string = '';
     protected templateError500: string = '';
 
     protected tmplHead: Function;
