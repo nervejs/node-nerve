@@ -1,4 +1,5 @@
 import _ = require('lodash');
+import browser = require('browser-detect');
 
 class NerveHelpers {
 
@@ -242,6 +243,18 @@ class NerveHelpers {
         }
 
     };
+
+    static browser: any = {
+
+        getName: function (userAgent: string): string {
+            return browser(userAgent).name;
+        },
+
+        getVersion: function (userAgent: string): string {
+            return browser(userAgent).version;
+        }
+
+    }
 
 }
 
