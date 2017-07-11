@@ -458,7 +458,7 @@ class NervePage extends NerveModule {
                 });
         } else {
             if (this.app.getCfg('isTestServer') && !this.isForceShowErrorPage()) {
-                this.send(err + '<br/>' + err.stack.replace(/\n/g, '<br/>'), 'text/html');
+                this.send(err + '<br/>' + err ? err.stack.replace(/\n/g, '<br/>') : '', 'text/html');
             } else {
                 if (this.isShowErrorPage()) {
                     this.renderErrorPage(statusCode);
