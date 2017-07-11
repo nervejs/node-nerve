@@ -421,9 +421,9 @@ class NervePage extends NerveModule {
     }
 
     errorHandler(err: any) {
-        let statusCode = err.statusCode || 500;
+        let statusCode = err && err.statusCode || 500;
 
-        if (err.name && err.name === 'UpstreamResponseError') {
+        if (err && err.name && err.name === 'UpstreamResponseError') {
             this.api.getRequests().forEach((request) => {
                 if (request.getStatusCode() !== '200') {
                     statusCode = request.getStatusCode();
@@ -431,7 +431,7 @@ class NervePage extends NerveModule {
                 }
             });
         } else {
-            this.errorLog(`${__filename} : ${err.stack ? err + err.stack : err}`);
+            this.errorLog(`${__filename} : ${err && err.stack ? err + err.stack : err}`);
         }
 
         this.options.response.status(statusCode);
