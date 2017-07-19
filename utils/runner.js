@@ -34,8 +34,10 @@ module.exports = function (projectOptions) {
             invalidArguments('--socket option is in invalid format');
         }
 
-        host = socket[1];
+        host = socket[1] || '0.0.0.0';
         port = socket[2];
+    } else {
+        host = '0.0.0.0';
     }
 
     if (options.port) {
@@ -110,10 +112,9 @@ module.exports = function (projectOptions) {
         }
 
         server = app.listen(port, host, function () {
-            var addr = server.address(),
-                bind = typeof addr === 'string' ? 'pipe ' + addr : addr.address + ':' + addr.port;
+            const listen = server.address();
 
-            console.log('Listening on ' + bind);
+            console.log(`Listening on http://${listen.address}:${listen.port}`);
         });
 
         app.route(require(path.resolve(process.cwd(), pathToProject, 'routes')));
