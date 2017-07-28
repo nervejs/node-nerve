@@ -20,6 +20,7 @@ module.exports = function (projectOptions) {
 
     options = require('commander')
         .option('-s, --socket [<host>]:<port>', 'socket to listen on')
+        .option('-p, --port <port>', 'port to listen on')
         .option('-w, --workers <n>', 'number of workers to start (default: Ncpu - 1)')
         .option('-r, --routes <file>', 'template routes file')
         .option('-t, --templates <dir>', 'templates directory')
@@ -33,8 +34,14 @@ module.exports = function (projectOptions) {
             invalidArguments('--socket option is in invalid format');
         }
 
-        host = socket[1];
+        host = socket[1] || '0.0.0.0';
         port = socket[2];
+    } else {
+        host = '0.0.0.0';
+    }
+
+    if (options.port) {
+        port = options.port;
     }
 
     if (cluster.isMaster) {
@@ -105,10 +112,9 @@ module.exports = function (projectOptions) {
         }
 
         server = app.listen(port, host, function () {
-            var addr = server.address(),
-                bind = typeof addr === 'string' ? 'pipe ' + addr : addr.address + ':' + addr.port;
+            const listen = server.address();
 
-            console.log('Listening on ' + bind);
+            console.log(`Listening on http://${listen.address}:${listen.port}`);
         });
 
         app.route(require(path.resolve(process.cwd(), pathToProject, 'routes')));
