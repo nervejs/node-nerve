@@ -1,6 +1,6 @@
 {
   "name": "node-nerve",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "node server for nervejs framework",
   "main": "dist/app",
   "typings": "dist/app",
@@ -21,9 +21,6 @@
   },
   "homepage": "https://github.com/nervejs/node-nerve#readme",
   "devDependencies": {
-    "grunt": "^0.4.5",
-    "grunt-eslint": "^19.0.0",
-    "grunt-jscs": "^3.0.1",
     "http-server": "^0.10.0",
     "mocha": "^3.4.2",
     "nyc": "^11.0.3",
@@ -44,7 +41,6 @@
     "cookie-parser": "^1.4.1",
     "express": "4.14.0",
     "gettext-parser": "1.1.2",
-    "grunt-cli": "^1.2.0",
     "handlebars": "4.0.6",
     "lodash": "3.10.1",
     "node-uuid": "1.4.8",
@@ -71,8 +67,7 @@
       "**/*.d.ts",
       "tests/**/*",
       "utils/**/*",
-      "coverage/**/*",
-      "Gruntfile.js"
+      "coverage/**/*"
     ]
   }
 }
