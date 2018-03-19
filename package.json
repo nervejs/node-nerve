@@ -35,7 +35,7 @@
     "@types/mocha": "^2.2.41",
     "@types/node": "^7.0.18",
     "@types/node-uuid": "0.0.28",
-    "@types/request": "0.0.45",
+    "@types/request": "2.47.0",
     "browser-detect": "^0.2.18",
     "commander": "2.9.0",
     "cookie-parser": "^1.4.1",
@@ -44,7 +44,7 @@
     "handlebars": "4.0.6",
     "lodash": "3.10.1",
     "node-uuid": "1.4.8",
-    "request": "2.74.0",
+    "request": "2.85.0",
     "source-map-support": "^0.4.15",
     "typescript": "^2.3.2"
   },
