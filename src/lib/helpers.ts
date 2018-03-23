@@ -38,6 +38,71 @@ class NerveHelpers {
     }
 
     /**
+     * Преобразование строки snake_case к camelCase
+     *
+     * @param {string} str
+     * @returns {string}
+     */
+    static snakeToCamelCase(str: string): string {
+        let s: string = str;
+
+        s = s.toLowerCase();
+        if (s.length > 3) {
+            s = s
+            .replace(/_(.)/g, $1 =>  $1.toUpperCase())
+            .replace(/_/g, '')
+            .replace(/^(.)/, $1 => $1.toLowerCase());
+        }
+        return s;
+    }
+
+    /**
+     * Преобразование строки camelCase к snake_case
+     *
+     * @param {string} str
+     * @returns {string}
+     */
+    static camelToSnakeCase(s: string): string {
+        return s
+            .replace(/(?:^|\.?)([A-Z])/g, (x, y) => '_' + y.toLowerCase())
+            .replace(/^_/, '');
+    }
+
+    /**
+     * Преобразование атрибутов объекта camelCase к snake_case
+     *
+     * @param {Object} object
+     * @returns {Object}
+     */
+
+    static objectCamelToSnakCase(object: any) {
+        const obj: any = {};
+
+        Object.keys(object).forEach((key: string) => {
+            obj[this.camelToSnakeCase(key)] = object[key];
+        });
+
+        return obj;
+    }
+
+    /**
+     * Преобразование атрибутов объекта snake_case к camelCase
+     *
+     * @param {Object} object
+     * @returns {Object}
+     */
+
+    static objectSnakeToCamelCase(object: any) {
+        const obj: any = {};
+
+        Object.keys(object).forEach((key: string) => {
+            obj[this.snakeToCamelCase(key)] = object[key];
+        });
+
+        return obj;
+    }
+
+    /**
      * Перевод секунд в строку с выводом часов, минут, секунд
      *
      * @param {Number} s секунды
