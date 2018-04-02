@@ -36,7 +36,7 @@
     "@types/node": "^7.0.18",
     "@types/node-uuid": "0.0.28",
     "@types/request": "2.47.0",
-    "browser-detect": "git+ssh://git@github.com:yarkeev/browser-detect.git#43f07ab1a7ae3dd5674cd7414c0a68b04dc0ae22",
+    "browser-detect": "^0.2.26",
     "commander": "2.9.0",
     "cookie-parser": "^1.4.1",
     "express": "4.14.0",
