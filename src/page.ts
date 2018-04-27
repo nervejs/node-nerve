@@ -62,6 +62,10 @@ class NervePage extends NerveModule {
 
             this.frontEndDir = this.getFrontendDir();
 
+            if (!this.frontEndDir) {
+                this.errorLog('FRONTEND DIR IS EMPTY, SET FRONTEND DIR TO CONFIG');
+            }
+
             if (this.templateHead) {
                 templateHeadPath = path.resolve(this.frontEndDir, this.baseTmplPath, this.templateHead);
                 this.tmplHead = this.getTemplate(templateHeadPath);

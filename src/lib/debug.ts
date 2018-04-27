@@ -13,7 +13,7 @@ class NerveDebug {
     static error(message: string, ...messages: any[]) {
         let args = arguments;
 
-        if (this.level > 0) {
+        if (this.level > 0 || this.level === undefined || isNaN(this.level)) {
             setTimeout(function () {
                 console.log.apply(this, args);
             });
