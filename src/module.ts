@@ -151,7 +151,7 @@ class NerveModule extends NerveObject {
                             }
 
                             resolve({
-                                locales: localesCache[this.constructor.name][currentLocale]
+                                locales: localesObject
                             });
                         });
                 } else {
