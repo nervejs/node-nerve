@@ -71,7 +71,7 @@ class NerveActiveUser extends NerveObject {
         return !!this.get('isAuthorized');
     }
 
-    fetched(callback: Function) {
+    fetched(callback: (...args: any[]) => void) {
         if (this.isFetchedState) {
             callback();
         } else {

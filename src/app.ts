@@ -182,7 +182,7 @@ class NerveApp extends NerveObject {
     }
 
     ready() {
-        return new Promise((resolve: Function) => {
+        return new Promise((resolve: (...args: any[]) => void) => {
             if (this.isReady) {
                 resolve();
             } else {
