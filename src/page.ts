@@ -58,7 +58,7 @@ class NervePage extends NerveModule {
 
             this.startTime = Date.now();
             this.time('FULL PAGE TIME');
-            this.log(`${this.getRequestMethod()} ${this.getRequestUrl()}`);
+            this.log(`${this.getRequestMethod()} ${this.getLogUrl()}`);
 
             this.frontEndDir = this.getFrontendDir();
 
