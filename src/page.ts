@@ -322,6 +322,10 @@ class NervePage extends NerveModule {
         return this.options.request && this.options.request.url ? this.options.request.url : null;
     }
 
+    getLogUrl(): string {
+        return this.getRequestUrl();
+    }
+
     fetchApi(): Promise<any> {
         return new Promise((resolve: () => void, reject: () => void) => {
             if (this.api) {
@@ -466,7 +470,7 @@ class NervePage extends NerveModule {
             }
         }
 
-        this.errorLog(`Error ${this.httpStatus} ${this.getRequestMethod()} ${this.getRequestUrl()}`);
+        this.errorLog(`Error ${this.httpStatus} ${this.getRequestMethod()} ${this.getLogUrl()}`);
 
         return this;
     }
