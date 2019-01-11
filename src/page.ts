@@ -238,6 +238,10 @@ class NervePage extends NerveModule {
         return [];
     }
 
+    getJs(): any[] {
+        return [];
+    }
+
     getResponsePromises(): Promise<any> {
         return new Promise((resolve, reject) => {
             new Promise((userResolve: () => void, userReject: () => void) => {
@@ -285,6 +289,7 @@ class NervePage extends NerveModule {
                             get: this.options.request.query
                         },
                         css: this.getCss(),
+                        js: this.getJs(),
                         hosts: {
                             static: this.getStaticHost(),
                             staticJs: this.getJsHost(),
