@@ -2,6 +2,7 @@ module.exports = function (projectOptions) {
     var cluster = require('cluster'),
         path = require('path'),
         cpuCount = require('os').cpus().length - 1,
+        AppModule,
         app,
         options,
         socket,
@@ -24,8 +25,15 @@ module.exports = function (projectOptions) {
         .option('-w, --workers <n>', 'number of workers to start (default: Ncpu - 1)')
         .option('-r, --routes <file>', 'template routes file')
         .option('-t, --templates <dir>', 'templates directory')
-        .option('-e, --env <env>', 'environment')
-        .parse(process.argv);
+        .option('-e, --env <env>', 'environment');
+
+    if (Array.isArray(projectOptions.additionalOptions)) {
+        projectOptions.additionalOptions.forEach(function (item) {
+            options.option(item.flags, item.description);
+        });
+    }
+
+    options.parse(process.argv);
 
     if (options.socket) {
         socket = options.socket.match(/^([\d\.]+)?:(\d+)$/);
@@ -105,7 +113,12 @@ module.exports = function (projectOptions) {
             process.exit(0);
         });
     } else {
-        app = require(path.resolve(process.cwd(), pathToProject, 'app')).app;
+        AppModule = require(path.resolve(process.cwd(), pathToProject, 'app'));
+        if (AppModule.App && AppModule.App.setup) {
+            AppModule.App.setup(options);
+        }
+
+        app = AppModule.app;
 
         if (options.env) {
             app.env(options.env);
