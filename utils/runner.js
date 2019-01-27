@@ -1,9 +1,10 @@
 module.exports = function (projectOptions) {
     var cluster = require('cluster'),
         path = require('path'),
+        fs = require('fs'),
         cpuCount = require('os').cpus().length - 1,
-        AppModule,
         app,
+        pathToSetupOnlineconf,
         options,
         socket,
         host,
@@ -113,12 +114,13 @@ module.exports = function (projectOptions) {
             process.exit(0);
         });
     } else {
-        AppModule = require(path.resolve(process.cwd(), pathToProject, 'app'));
-        if (AppModule.App && AppModule.App.setup) {
-            AppModule.App.setup(options);
+        pathToSetupOnlineconf = path.resolve(process.cwd(), pathToProject, 'setup-onlineconf');
+        console.log('pathToSetupOnlineconf: ', pathToSetupOnlineconf);
+        if (fs.existsSync(pathToSetupOnlineconf)) {
+            require(path.resolve(process.cwd(), pathToProject, 'setup-onlineconf'))(options);
         }
 
-        app = AppModule.app;
+        app = require(path.resolve(process.cwd(), pathToProject, 'app')).app;
 
         if (options.env) {
             app.env(options.env);
