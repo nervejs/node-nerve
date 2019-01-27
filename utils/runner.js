@@ -115,8 +115,7 @@ module.exports = function (projectOptions) {
         });
     } else {
         pathToSetupOnlineconf = path.resolve(process.cwd(), pathToProject, 'setup-onlineconf');
-        console.log('pathToSetupOnlineconf: ', pathToSetupOnlineconf);
-        if (fs.existsSync(pathToSetupOnlineconf)) {
+        if (fs.existsSync(pathToSetupOnlineconf + '.js')) {
             require(path.resolve(process.cwd(), pathToProject, 'setup-onlineconf'))(options);
         }
 
