@@ -4,7 +4,7 @@ module.exports = function (projectOptions) {
         fs = require('fs'),
         cpuCount = require('os').cpus().length - 1,
         app,
-        pathToSetupOnlineconf,
+        pathToSetup,
         options,
         socket,
         host,
@@ -114,9 +114,9 @@ module.exports = function (projectOptions) {
             process.exit(0);
         });
     } else {
-        pathToSetupOnlineconf = path.resolve(process.cwd(), pathToProject, 'setup-onlineconf');
-        if (fs.existsSync(pathToSetupOnlineconf + '.js')) {
-            require(path.resolve(process.cwd(), pathToProject, 'setup-onlineconf'))(options);
+        pathToSetup = path.resolve(process.cwd(), pathToProject, 'setup');
+        if (fs.existsSync(pathToSetup + '.js')) {
+            require(pathToSetup)(options);
         }
 
         app = require(path.resolve(process.cwd(), pathToProject, 'app')).app;
