@@ -59,19 +59,21 @@ class NerveApp extends NerveObject {
 
         this.environment = process.env.NODE_NERVE_ENV || 'dev';
 
-        this.readCfg()
-            .then(() => {
-                debug.setLevel(this.getCfg('logLevel'));
-                locales.init(this);
+        setTimeout(() => {
+            this.readCfg()
+                .then(() => {
+                    debug.setLevel(this.getCfg('logLevel'));
+                    locales.init(this);
 
-                if (this.getCfg('localStatic')) {
-                    this.server.use(express.static(this.getCfg('localStatic')));
-                }
+                    if (this.getCfg('localStatic')) {
+                        this.server.use(express.static(this.getCfg('localStatic')));
+                    }
 
-                this.isReady = true;
-                this.emit('ready');
-            })
-            .catch((err: Error) => debug.error(err.toString()));
+                    this.isReady = true;
+                    this.emit('ready');
+                })
+                .catch((err: Error) => debug.error(err.toString()));
+        });
     }
 
     getServer(): express.Express {
