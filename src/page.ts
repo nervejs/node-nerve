@@ -58,7 +58,7 @@ class NervePage extends NerveModule {
 
             this.startTime = Date.now();
             this.time('FULL PAGE TIME');
-            this.log(`${this.getRequestMethod()} ${this.getRequestUrl()}`);
+            this.log(`${this.getRequestMethod()} ${this.getLogUrl()}`);
 
             this.frontEndDir = this.getFrontendDir();
 
@@ -238,6 +238,10 @@ class NervePage extends NerveModule {
         return [];
     }
 
+    getJs(): any[] {
+        return [];
+    }
+
     getResponsePromises(): Promise<any> {
         return new Promise((resolve, reject) => {
             new Promise((userResolve: () => void, userReject: () => void) => {
@@ -285,6 +289,7 @@ class NervePage extends NerveModule {
                             get: this.options.request.query
                         },
                         css: this.getCss(),
+                        js: this.getJs(),
                         hosts: {
                             static: this.getStaticHost(),
                             staticJs: this.getJsHost(),
@@ -320,6 +325,10 @@ class NervePage extends NerveModule {
 
     getRequestUrl(): string {
         return this.options.request && this.options.request.url ? this.options.request.url : null;
+    }
+
+    getLogUrl(): string {
+        return this.getRequestUrl();
     }
 
     fetchApi(): Promise<any> {
@@ -466,7 +475,7 @@ class NervePage extends NerveModule {
             }
         }
 
-        this.errorLog(`Error ${this.httpStatus} ${this.getRequestMethod()} ${this.getRequestUrl()}`);
+        this.errorLog(`Error ${this.httpStatus} ${this.getRequestMethod()} ${this.getLogUrl()}`);
 
         return this;
     }

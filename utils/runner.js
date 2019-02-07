@@ -1,8 +1,10 @@
 module.exports = function (projectOptions) {
     var cluster = require('cluster'),
         path = require('path'),
+        fs = require('fs'),
         cpuCount = require('os').cpus().length - 1,
         app,
+        pathToSetup,
         options,
         socket,
         host,
@@ -24,8 +26,15 @@ module.exports = function (projectOptions) {
         .option('-w, --workers <n>', 'number of workers to start (default: Ncpu - 1)')
         .option('-r, --routes <file>', 'template routes file')
         .option('-t, --templates <dir>', 'templates directory')
-        .option('-e, --env <env>', 'environment')
-        .parse(process.argv);
+        .option('-e, --env <env>', 'environment');
+
+    if (Array.isArray(projectOptions.additionalOptions)) {
+        projectOptions.additionalOptions.forEach(function (item) {
+            options.option(item.flags, item.description);
+        });
+    }
+
+    options.parse(process.argv);
 
     if (options.socket) {
         socket = options.socket.match(/^([\d\.]+)?:(\d+)$/);
@@ -105,6 +114,11 @@ module.exports = function (projectOptions) {
             process.exit(0);
         });
     } else {
+        pathToSetup = path.resolve(process.cwd(), pathToProject, 'setup');
+        if (fs.existsSync(pathToSetup + '.js')) {
+            require(pathToSetup)(options);
+        }
+
         app = require(path.resolve(process.cwd(), pathToProject, 'app')).app;
 
         if (options.env) {

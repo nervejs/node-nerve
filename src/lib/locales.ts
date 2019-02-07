@@ -2,7 +2,8 @@ import path = require('path');
 import fs = require('fs');
 import gettextParser = require('gettext-parser');
 
-import {NerveApp} from '../app';
+import { NerveApp } from '../app';
+import debug = require('./debug');
 
 let locales: any = {};
 
@@ -13,13 +14,17 @@ class NerveLocales {
 
         if (localesDir) {
             fs.readdir(localesDir, (err: Error, files: string[]) => {
-                files.forEach((locale: string) => {
-                    let filePath: string = path.resolve(app.getCfg('localesDir'), locale, app.getCfg('localesFileName'));
+                if (err) {
+                    debug.error('Failed read locales');
+                } else {
+                    files.forEach((locale: string) => {
+                        let filePath: string = path.resolve(app.getCfg('localesDir'), locale, app.getCfg('localesFileName'));
 
-                    fs.readFile(filePath, (err: Error, content: Buffer) => {
-                        locales[locale] = gettextParser.po.parse(content.toString()).translations;
+                        fs.readFile(filePath, (err: Error, content: Buffer) => {
+                            locales[locale] = gettextParser.po.parse(content.toString()).translations;
+                        });
                     });
-                });
+                }
             });
         }
     }
