@@ -1,6 +1,6 @@
 {
 	"name": "node-nerve",
-	"version": "1.0.22",
+	"version": "1.0.23",
 	"description": "node server for nervejs framework",
 	"main": "dist/app",
 	"typings": "dist/app",

@@ -367,51 +367,52 @@ class NervePage extends NerveModule {
         debug.timeEnd(this.getRequestId() + message, `${this.getLogPrefix()}: ${message}`);
     }
 
-    getHtml(vars: any, contentTmpl?: Function): Promise<any> {
-        let head: string,
-            content: string,
-            footer: string;
+    async renderTemplate(template: Function & { default?: () => Function }, vars: any, templateId: string): Promise<string> {
+        return new Promise<string>(async (resolve, reject) => {
+            let html = '';
 
+            if (template) {
+                this.time(`RENDER ${templateId}`);
+
+                if (template.default) {
+                    template = template.default;
+                }
+
+                const result = template(vars);
+
+                if (typeof (result) === 'string') {
+                    html = result;
+                } else if (result.then) {
+                    html = await result;
+                } else {
+                    this.debug('Template type unknown - returning empty string');
+                }
+
+                this.timeEnd(`RENDER ${templateId}`);
+            } else {
+                this.debug(`EMPTY ${templateId} TEMPLATE`);
+            }
+
+            resolve(html);
+        });
+    }
+
+    getHtml(vars: any, contentTmpl?: Function): Promise<any> {
         this.time('RENDER');
 
-        return new Promise((resolve: (html: string) => void, reject: () => void) => {
-            Promise.all([
-                new Promise((resolve: Function) => {
-                    this.time('RENDER HEAD');
-                    head = this.tmplHead ? this.tmplHead(vars) : '';
-                    this.timeEnd('RENDER HEAD');
+        return new Promise(async (resolve: (html: string) => void, reject: (err: Error) => void) => {
+            try {
+                const [head, content, footer] = await Promise.all([
+                    this.renderTemplate(this.tmplHead, vars, 'HEAD'),
+                    this.renderTemplate(_.isFunction(contentTmpl) ? contentTmpl : this.tmpl, vars, 'CONTENT'),
+                    this.renderTemplate(this.tmplFooter, vars, 'FOOTER'),
+                ]);
 
-                    resolve(head);
-                }),
-
-                new Promise((resolve: Function) => {
-                    let tmpl: Function = _.isFunction(contentTmpl) ? contentTmpl : this.tmpl;
-
-                    if (tmpl) {
-                        this.time('RENDER CONTENT');
-                        content = tmpl(vars);
-                        this.timeEnd('RENDER CONTENT');
-                    } else {
-                        this.debug('EMPTY CONTENT TEMPLATE');
-                        content = '';
-                    }
-
-                    resolve(content);
-                }),
-
-                new Promise((resolve: Function) => {
-                    this.time('RENDER FOOTER');
-                    footer = this.tmplFooter ? this.tmplFooter(vars) : '';
-                    this.timeEnd('RENDER FOOTER');
-
-                    resolve(footer);
-                })
-            ])
-                .then(() => {
-                    this.timeEnd('RENDER');
-                    resolve(head + content + footer);
-                })
-                .catch(reject);
+                this.timeEnd('RENDER');
+                resolve(head + content + footer);
+            } catch (err) {
+                reject(err);
+            }
         });
     }
 
