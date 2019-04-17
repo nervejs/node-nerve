@@ -58,7 +58,7 @@ class NerveModule extends NerveObject {
         let result: any = {};
 
         Object.keys(locales).forEach((key: string) => {
-            let item = locales[key];
+            let item: { text: string; vars: any; ctx: string; } = locales[key];
 
             if (_.isString(item)) {
                 result[key] = this.getTextBySource(item);
