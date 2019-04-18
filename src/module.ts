@@ -125,7 +125,7 @@ class NerveModule extends NerveObject {
             localesPromise,
             localesObject = {};
 
-        if (!localesCache[this.constructor.name]) {
+        if (!localesCache[this.constructor.name] || (this.app && this.app.getCfg('isTestServer'))) {
             localesCache[this.constructor.name] = {};
         }
 
@@ -146,9 +146,7 @@ class NerveModule extends NerveObject {
                                 localesObject = locales;
                             }
 
-                            if (!this.app || !this.app.getCfg('isTestServer')) {
-                                localesCache[this.constructor.name][currentLocale] = localesObject;
-                            }
+                            localesCache[this.constructor.name][currentLocale] = localesObject;
 
                             resolve({
                                 locales: localesObject
