@@ -120,7 +120,7 @@ class NerveModule extends NerveObject {
         return null;
     }
 
-    getLocalesVars() {
+    getLocalesVars(): Promise<any> {
         let currentLocale = this.activeUser.get('locale'),
             localesPromise,
             localesObject = {};

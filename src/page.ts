@@ -176,7 +176,7 @@ class NervePage extends NerveModule {
         return this.options.type;
     }
 
-    getTitle(): string {
+    async getTitle(): Promise<string> {
         return 'NerveJS Application';
     }
 
@@ -281,7 +281,9 @@ class NervePage extends NerveModule {
     getTemplateVars() {
         return new Promise((resolve: Function, reject: () => void) => {
             this.getLocalesVars()
-                .then(() => {
+                .then(async () => {
+                    const pageTitle = await this.getTitle();
+
                     resolve({
                         request: {
                             url: this.getRequestUrl(),
@@ -297,7 +299,7 @@ class NervePage extends NerveModule {
                             staticJs: this.getJsHost(),
                             staticCss: this.getCssHost()
                         },
-                        pageTitle: this.getTitle(),
+                        pageTitle,
                         routes: this.app.getPublicRoutes()
                     });
                 })
