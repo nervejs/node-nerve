@@ -38,6 +38,10 @@ class NervePage extends NerveModule {
 
     protected activeUser: ActiveUser;
 
+    protected storeState: any = {};
+
+    protected isFirstContentRender = false;
+
     constructor(app: NerveApp, options?: any) {
         super(app, options);
 
@@ -176,7 +180,7 @@ class NervePage extends NerveModule {
         return this.options.type;
     }
 
-    async getTitle(): Promise<string> {
+    getTitle(): string {
         return 'NerveJS Application';
     }
 
@@ -281,9 +285,7 @@ class NervePage extends NerveModule {
     getTemplateVars() {
         return new Promise((resolve: Function, reject: () => void) => {
             this.getLocalesVars()
-                .then(async () => {
-                    const pageTitle = await this.getTitle();
-
+                .then(() => {
                     resolve({
                         request: {
                             url: this.getRequestUrl(),
@@ -299,12 +301,20 @@ class NervePage extends NerveModule {
                             staticJs: this.getJsHost(),
                             staticCss: this.getCssHost()
                         },
-                        pageTitle,
+                        pageTitle: this.getTitle(),
                         routes: this.app.getPublicRoutes()
                     });
                 })
                 .catch(reject);
         });
+    }
+
+    async getTemplateHeadVars() {
+        return {};
+    }
+
+    async getTemplateFooterVars() {
+        return {};
     }
 
     getErrorTemplateVars() {
@@ -387,7 +397,10 @@ class NervePage extends NerveModule {
                 if (typeof (result) === 'string') {
                     html = result;
                 } else if (result.then) {
-                    html = await result;
+                    const renderResult = await result;
+
+                    html = renderResult.html;
+                    this.storeState = renderResult.store;
                 } else {
                     this.debug('Template type unknown - returning empty string');
                 }
@@ -406,11 +419,25 @@ class NervePage extends NerveModule {
 
         return new Promise(async (resolve: (html: string) => void, reject: (err: Error) => void) => {
             try {
-                const [head, content, footer] = await Promise.all([
-                    this.renderTemplate(this.tmplHead, vars, 'HEAD'),
-                    this.renderTemplate(_.isFunction(contentTmpl) ? contentTmpl : this.tmpl, vars, 'CONTENT'),
-                    this.renderTemplate(this.tmplFooter, vars, 'FOOTER'),
-                ]);
+                let head, content, footer;
+
+                if (this.isFirstContentRender) {
+                    content = await this.renderTemplate(_.isFunction(contentTmpl) ? contentTmpl : this.tmpl, vars, 'CONTENT');
+
+                    const headVars = await this.getTemplateHeadVars();
+                    const footerVars = await this.getTemplateFooterVars();
+
+                    [head, footer] = await Promise.all([
+                        this.renderTemplate(this.tmplHead, { ...vars, ...headVars }, 'HEAD'),
+                        this.renderTemplate(this.tmplFooter, { ...vars, ...footerVars }, 'FOOTER'),
+                    ]);
+                } else {
+                    [head, content, footer] = await Promise.all([
+                        this.renderTemplate(this.tmplHead, vars, 'HEAD'),
+                        this.renderTemplate(_.isFunction(contentTmpl) ? contentTmpl : this.tmpl, vars, 'CONTENT'),
+                        this.renderTemplate(this.tmplFooter, vars, 'FOOTER'),
+                    ]);
+                }
 
                 this.timeEnd('RENDER');
                 resolve(head + content + footer);

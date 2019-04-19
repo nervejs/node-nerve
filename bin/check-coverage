@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-MIN_COVERAGE_PERCENT=18;
+MIN_COVERAGE_PERCENT=17;
 
 rm -rf coverage;
 
