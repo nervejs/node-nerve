@@ -45,7 +45,7 @@
 		"express": "4.16.3",
 		"gettext-parser": "1.1.2",
 		"handlebars": "4.1.2",
-		"lodash": "4.17.5",
+		"lodash": "4.17.15",
 		"node-uuid": "1.4.8",
 		"request": "2.85.0"
 	},
