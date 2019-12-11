@@ -96,7 +96,7 @@ class NerveApp extends NerveObject {
         return this.SPRITE_VERSIONS;
     }
 
-    listen(port: number, host: string, callback: Function) {
+    listen(port: number, host: string, callback: (...args: any[]) => void) {
         this.connection = this.server.listen(port, host, callback);
         return this.connection;
     }
