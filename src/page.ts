@@ -366,19 +366,27 @@ class NervePage extends NerveModule {
     }
 
     log(message: string) {
-        debug.log(`${this.getLogPrefix()}: ${message}`);
+        if (!this.isPingPage() || this.app.getCfg('isLoggedPingRequests')) {
+            debug.log(`${this.getLogPrefix()}: ${message}`);
+        }
     }
 
     debug(message: string) {
-        debug.debug(`${this.getLogPrefix()}: ${message}`);
+        if (!this.isPingPage() || this.app.getCfg('isLoggedPingRequests')) {
+            debug.debug(`${this.getLogPrefix()}: ${message}`);
+        }
     }
 
     time(message: string) {
-        debug.time(this.getRequestId() + message);
+        if (!this.isPingPage() || this.app.getCfg('isLoggedPingRequests')) {
+            debug.time(this.getRequestId() + message);
+        }
     }
 
     timeEnd(message: string) {
-        debug.timeEnd(this.getRequestId() + message, `${this.getLogPrefix()}: ${message}`);
+        if (!this.isPingPage() || this.app.getCfg('isLoggedPingRequests')) {
+            debug.timeEnd(this.getRequestId() + message, `${this.getLogPrefix()}: ${message}`);
+        }
     }
 
     async renderTemplate(template: Function & { default?: () => Function }, vars: any, templateId: string): Promise<string> {
@@ -501,6 +509,10 @@ class NervePage extends NerveModule {
         this.errorLog(`Error ${this.httpStatus} ${this.getRequestMethod()} ${this.getLogUrl()}`);
 
         return this;
+    }
+
+    isPingPage() {
+        return false;
     }
 
     isShowErrorPage(): boolean {
