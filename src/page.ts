@@ -62,6 +62,7 @@ class NervePage extends NerveModule {
 
             this.startTime = Date.now();
             this.time('FULL PAGE TIME');
+            this.log(`START`);
             this.log(`${this.getRequestMethod()} ${this.getLogUrl()}`);
 
             this.frontEndDir = this.getFrontendDir();
@@ -326,7 +327,7 @@ class NervePage extends NerveModule {
             pageName: string = this.getName(),
             user: string = this.activeUser && this.activeUser.get('email') ? this.activeUser.get('email') : 'unauthorized';
 
-        return `${date}: ${pageName}: ${user}`;
+        return `[${process.pid}] ${this.getRequestId()} ${date}: ${pageName}: ${user}`;
     }
 
     getRequestId(): string {
@@ -601,6 +602,7 @@ class NervePage extends NerveModule {
 
         this.timeEnd('PAGE PROCESSING');
         this.timeEnd('FULL PAGE TIME');
+        this.log('END');
 
         this.processingTime = Date.now() - this.startProcessingTime;
         this.fullTime = Date.now() - this.startTime;
