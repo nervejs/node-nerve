@@ -21,7 +21,11 @@ class NerveLocales {
                         let filePath: string = path.resolve(app.getCfg('localesDir'), locale, app.getCfg('localesFileName'));
 
                         fs.readFile(filePath, (err: Error, content: Buffer) => {
-                            locales[locale] = gettextParser.po.parse(content.toString()).translations;
+                            if (err) {
+                                debug.error(`Failed read locales file: ${filePath}: `, err);
+                            } else {
+                                locales[locale] = gettextParser.po.parse(content.toString()).translations;
+                            }
                         });
                     });
                 }
