@@ -294,6 +294,7 @@ class NervePage extends NerveModule {
                             get: this.options.request.query,
                             params: this.options.request.params,
                             query: this.options.request.query,
+                            cookies: this.options.request.cookies,
                         },
                         css: this.getCss(),
                         js: this.getJs(),
