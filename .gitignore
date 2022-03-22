@@ -3,5 +3,4 @@
 node_modules
 components
 dist
-package-lock.json
 coverage
