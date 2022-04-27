@@ -36,6 +36,7 @@ class NerveApp extends NerveObject {
     protected router: Router;
     protected environment: string;
     protected workerIndex: number;
+    protected instanceId: string;
 
     constructor() {
         super();
@@ -181,6 +182,10 @@ class NerveApp extends NerveObject {
      */
     setWorkerIndex(index: number) {
         this.workerIndex = index;
+    }
+
+    setInstanceId(instanceId: string) {
+        this.instanceId = instanceId;
     }
 
     ready() {

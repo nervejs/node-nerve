@@ -26,6 +26,7 @@ module.exports = function (projectOptions) {
         .option('-w, --workers <n>', 'number of workers to start (default: Ncpu - 1)')
         .option('-r, --routes <file>', 'template routes file')
         .option('-t, --templates <dir>', 'templates directory')
+        .option('-i, --instance-id <dir>', 'instance id')
         .option('-e, --env <env>', 'environment');
 
     if (Array.isArray(projectOptions.additionalOptions)) {
@@ -130,6 +131,10 @@ module.exports = function (projectOptions) {
 
             console.log(`Listening on http://${listen.address}:${listen.port}`);
         });
+
+        if (options.instanceId) {
+            app.setInstanceId(options.instanceId);
+        }
 
         app.route(require(path.resolve(process.cwd(), pathToProject, 'routes')));
 
