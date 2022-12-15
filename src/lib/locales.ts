@@ -6,6 +6,7 @@ import { NerveApp } from '../app';
 import debug = require('./debug');
 
 let locales: any = {};
+let localesWithoutContext: any = {};
 
 class NerveLocales {
 
@@ -24,7 +25,22 @@ class NerveLocales {
                             if (err) {
                                 debug.error(`Failed read locales file: ${filePath}: `, err);
                             } else {
-                                locales[locale] = gettextParser.po.parse(content.toString()).translations;
+                                const translations = gettextParser.po.parse(content.toString()).translations;
+
+                                locales[locale] = translations;
+
+                                localesWithoutContext[locale] = {};
+
+                                Object.keys(translations)
+                                    .filter((ctx) => ctx.length > 0)
+                                    .forEach((ctx) => {
+                                        Object.keys(translations[ctx])
+                                            .forEach((msgId) => {
+                                                const item = translations[ctx][msgId];
+
+                                                localesWithoutContext[locale][msgId] = item.msgstr[0];
+                                            });
+                                    });
                             }
                         });
                     });
@@ -40,7 +56,11 @@ class NerveLocales {
 
         result = locales[locale] && locales[locale][ctx] && locales[locale][ctx][message] && locales[locale][ctx][message].msgstr && locales[locale][ctx][message].msgstr[0];
 
-        return result || message;
+        return result || this.getAlternateContextText(message, locale) || message;
+    }
+
+    static getAlternateContextText(message: string, locale: string) {
+        return localesWithoutContext[locale][message];
     }
 
 }
