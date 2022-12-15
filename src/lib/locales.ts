@@ -60,7 +60,7 @@ class NerveLocales {
     }
 
     static getAlternateContextText(message: string, locale: string) {
-        return localesWithoutContext[locale][message];
+        return localesWithoutContext?.[locale]?.[message] || '';
     }
 
 }
