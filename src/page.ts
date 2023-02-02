@@ -39,6 +39,7 @@ class NervePage extends NerveModule {
     protected activeUser: ActiveUser;
 
     protected storeState: any = {};
+    protected renderResult: any = {};
 
     protected isFirstContentRender = false;
 
@@ -409,6 +410,7 @@ class NervePage extends NerveModule {
                 const renderResult = await result;
 
                 html = renderResult.html;
+                this.renderResult = renderResult;
                 this.storeState = renderResult.store;
             } else {
                 this.debug('Template type unknown - returning empty string');
