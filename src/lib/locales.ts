@@ -32,7 +32,7 @@ class NerveLocales {
                                 localesWithoutContext[locale] = {};
 
                                 Object.keys(translations)
-                                    .filter((ctx) => ctx.length > 0)
+                                    // .filter((ctx) => ctx.length > 0)
                                     .forEach((ctx) => {
                                         Object.keys(translations[ctx])
                                             .forEach((msgId) => {
